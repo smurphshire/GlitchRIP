@@ -1,0 +1,2286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GlitchRip // Glitch Image Studio</title>
+<style>
+  :root {
+    --bg-dark: #0d0e12;
+    --bg-panel: #14161d;
+    --bg-card: #1c1f29;
+    --border: #2a2e3d;
+    --text-main: #e6e8f0;
+    --text-muted: #8a90a6;
+    --accent: #00f0ff;
+    --accent-alt: #ff0055;
+    --sidebar-width: 340px;
+  }
+
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  }
+
+  body {
+    background-color: var(--bg-dark);
+    color: var(--text-main);
+    height: 100vh;
+    width: 100vw;
+    overflow: hidden;
+    display: flex;
+  }
+
+  /* Sidebar Styles */
+  #sidebar {
+    width: var(--sidebar-width);
+    height: 100vh;
+    background-color: var(--bg-panel);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    transition: margin-left 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 20;
+    flex-shrink: 0;
+  }
+
+  #sidebar.collapsed {
+    margin-left: calc(var(--sidebar-width) * -1);
+  }
+
+  .brand-header {
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .brand-title {
+    font-size: 18px;
+    font-weight: 800;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    background: linear-gradient(90deg, var(--accent), #fff, var(--accent-alt));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .brand-tag {
+    font-size: 10px;
+    padding: 2px 6px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    color: var(--accent);
+    font-family: monospace;
+  }
+
+  .panel-scroll {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    padding: 14px 14px 22px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    overscroll-behavior: contain;
+  }
+
+  .panel-scroll::-webkit-scrollbar {
+    width: 5px;
+  }
+  .panel-scroll::-webkit-scrollbar-thumb {
+    background: var(--border);
+    border-radius: 3px;
+  }
+
+  /* Collapsible Accordion Cards */
+  details.effect-group {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    overflow: hidden;
+    flex-shrink: 0;
+  }
+
+  details.effect-group summary {
+    padding: 11px 14px;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    cursor: pointer;
+    list-style: none;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    user-select: none;
+    background: rgba(255, 255, 255, 0.02);
+  }
+
+  details.effect-group summary::-webkit-details-marker {
+    display: none;
+  }
+
+  details.effect-group summary::after {
+    content: "+";
+    font-family: monospace;
+    font-size: 15px;
+    color: var(--text-muted);
+  }
+
+  details.effect-group[open] summary::after {
+    content: "−";
+    color: var(--accent);
+  }
+
+  details.effect-group[open] summary {
+    border-bottom: 1px solid var(--border);
+  }
+
+  .group-body {
+    padding: 12px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  /* Controls */
+  .control-row {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+  }
+
+  .control-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 11px;
+    color: var(--text-muted);
+  }
+
+  .control-val {
+    font-family: monospace;
+    color: var(--text-main);
+  }
+
+  input[type="range"] {
+    -webkit-appearance: none;
+    width: 100%;
+    height: 4px;
+    background: var(--bg-dark);
+    border-radius: 2px;
+    outline: none;
+  }
+
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 13px;
+    height: 13px;
+    border-radius: 50%;
+    background: var(--accent);
+    cursor: pointer;
+    border: 2px solid var(--bg-dark);
+  }
+
+  select, input[type="text"] {
+    width: 100%;
+    background: var(--bg-dark);
+    border: 1px solid var(--border);
+    color: var(--text-main);
+    padding: 7px 10px;
+    border-radius: 4px;
+    font-size: 12px;
+    outline: none;
+  }
+
+  select:focus, input[type="text"]:focus {
+    border-color: var(--accent);
+  }
+
+  .btn {
+    background: var(--bg-dark);
+    border: 1px solid var(--border);
+    color: var(--text-main);
+    padding: 8px 12px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    text-align: center;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+  }
+
+  .btn:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  .btn-primary {
+    background: var(--accent);
+    color: #050608;
+    border-color: var(--accent);
+  }
+
+  .btn-primary:hover {
+    background: #5ceeff;
+    color: #050608;
+  }
+
+  .btn-danger {
+    border-color: rgba(255, 0, 85, 0.4);
+    color: #ff5c8d;
+  }
+
+  .btn-danger:hover {
+    background: rgba(255, 0, 85, 0.15);
+    border-color: var(--accent-alt);
+  }
+
+  .btn-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+
+  .btn-grid-3 {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 6px;
+  }
+
+  /* Color Target Bar */
+  .color-picker-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  input[type="color"] {
+    -webkit-appearance: none;
+    border: none;
+    width: 32px;
+    height: 30px;
+    border-radius: 4px;
+    cursor: pointer;
+    background: none;
+  }
+  input[type="color"]::-webkit-color-swatch-wrapper {
+    padding: 0;
+  }
+  input[type="color"]::-webkit-color-swatch {
+    border: 1px solid var(--border);
+    border-radius: 4px;
+  }
+
+  .toggle-pill {
+    display: flex;
+    background: var(--bg-dark);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 2px;
+  }
+
+  .toggle-pill button {
+    flex: 1;
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    font-size: 11px;
+    font-weight: 600;
+    padding: 5px 8px;
+    border-radius: 3px;
+    cursor: pointer;
+  }
+
+  .toggle-pill button.active {
+    background: var(--bg-card);
+    color: var(--accent);
+    border: 1px solid var(--border);
+  }
+
+  .checkbox-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 12px;
+    cursor: pointer;
+  }
+
+  .checkbox-row input {
+    accent-color: var(--accent);
+    width: 15px;
+    height: 15px;
+    cursor: pointer;
+  }
+
+  .tool-mask-container {
+    border-top: 1px dashed var(--border);
+    margin-top: 6px;
+    padding-top: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .mask-title {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--accent);
+    font-weight: bold;
+  }
+
+  .offline-note {
+    font-size: 10px;
+    line-height: 1.5;
+    color: var(--text-muted);
+  }
+
+  /* Viewport Area */
+  #viewport-wrapper {
+    flex: 1;
+    height: 100vh;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    background-image: radial-gradient(#232736 1px, transparent 1px);
+    background-size: 20px 20px;
+    overflow: hidden;
+  }
+
+  #topbar {
+    height: 48px;
+    padding: 0 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: rgba(13, 14, 18, 0.85);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--border);
+    z-index: 10;
+  }
+
+  .status-info {
+    font-family: monospace;
+    font-size: 11px;
+    color: var(--text-muted);
+  }
+
+  #canvas-container {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 28px;
+    overflow: hidden;
+    position: relative;
+  }
+
+  canvas#mainCanvas {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.75);
+    border: 1px solid var(--border);
+    background: #000;
+  }
+
+  canvas#mainCanvas.eyedropper-active {
+    cursor: crosshair;
+  }
+
+  #empty-state {
+    position: absolute;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+    padding: 40px;
+    border: 1px dashed var(--border);
+    border-radius: 12px;
+    background: rgba(20, 22, 29, 0.8);
+    text-align: center;
+  }
+
+  #empty-state h2 {
+    font-size: 16px;
+    letter-spacing: 1px;
+  }
+
+  #empty-state p {
+    font-size: 12px;
+    color: var(--text-muted);
+    max-width: 260px;
+  }
+
+  .hidden {
+    display: none !important;
+  }
+
+  /* ===== v2 sleek green theme ===== */
+  :root{--bg-dark:#0a0b0d;--bg-panel:#0f1114;--bg-card:#15181c;--border:#23272d;--text-main:#e8ebe9;--text-muted:#79827c;--accent:#2dff88;--accent-alt:#ff4d6d;--sidebar-width:320px}
+  .brand-header{padding:16px 20px}
+  .brand-title{background:none;-webkit-text-fill-color:var(--accent);color:var(--accent);font-size:17px;letter-spacing:3px;font-weight:800}
+  .brand-tag{background:transparent;border-color:transparent;color:var(--text-muted)}
+  .offline-note{display:none}
+  .panel-scroll{gap:0;padding:4px 16px 24px}
+  details.effect-group{background:transparent;border:none;border-bottom:1px solid var(--border);border-radius:0}
+  details.effect-group summary{background:none;padding:13px 2px;font-size:11px;letter-spacing:1.4px;color:var(--text-muted)}
+  details.effect-group[open] summary{border-bottom:none;color:var(--text-main)}
+  .group-body{padding:2px 2px 16px;gap:13px}
+  .btn{border-radius:6px;background:var(--bg-card)}
+  .btn-primary{background:var(--accent);border-color:var(--accent)}
+  .btn-primary:hover{background:#7dffb0;color:#04100a}
+  .btn-danger{color:#ff7d94;border-color:var(--border)}
+  input[type=range]{height:3px;background:var(--border)}
+  input[type=range]::-webkit-slider-thumb{width:12px;height:12px;border:none;box-shadow:0 0 0 3px rgba(45,255,136,.15)}
+  input[type=range]::-moz-range-thumb{width:12px;height:12px;border:none;border-radius:50%;background:var(--accent)}
+  .toggle-pill button.active{background:rgba(45,255,136,.1);border-color:rgba(45,255,136,.4)}
+  #viewport-wrapper{background-image:none;background-color:var(--bg-dark)}
+  #topbar{background:var(--bg-dark)}
+  #empty-state{background:transparent;border-color:var(--border)}
+  #empty-state h2{color:var(--accent);letter-spacing:3px}
+</style>
+</head>
+<body>
+
+  <!-- LEFT COLLAPSIBLE SIDEBAR -->
+  <aside id="sidebar">
+    <div class="brand-header">
+      <span class="brand-title">GlitchRip</span>
+      <span class="brand-tag">v2.0</span>
+    </div>
+
+    <div class="panel-scroll">
+
+      <!-- 1. SOURCE & GLOBAL OVERRIDE -->
+      <details class="effect-group" open>
+        <summary>Source & Mask Override</summary>
+        <div class="group-body">
+          <input type="file" id="baseImageInput" accept="image/*,.heic,.heif,.hif,.avif,.webp,.gif,.bmp,.tif,.tiff,.jfif,.jpe,.svg,.ico,.apng" class="hidden">
+          <div class="btn-grid">
+            <button class="btn btn-primary" onclick="document.getElementById('baseImageInput').click()">Upload Image</button>
+            <button class="btn btn-danger" id="resetAllBtn">Reset Studio</button>
+          </div>
+
+          <div class="control-row">
+            <div class="control-header"><span>Master Overriding State</span></div>
+            <select id="masterOverrideSelect">
+              <option value="none">Use Individual Tool Masks</option>
+              <option value="force-global">Globalize All (Ignore Tool Selection)</option>
+              <option value="force-color">Enforce Master Color Everywhere</option>
+            </select>
+          </div>
+
+          <div id="masterColorControls" class="hidden" style="display:flex; flex-direction:column; gap:10px;">
+            <div class="color-picker-row">
+              <input type="color" id="masterColor" value="#00f0ff">
+              <button class="btn eyedropper-btn" data-target="master" style="flex:1;">Pick From Image</button>
+            </div>
+            <div class="control-row">
+              <div class="control-header">
+                <span>Master Tolerance</span>
+                <span class="control-val" id="masterToleranceVal">65</span>
+              </div>
+              <input type="range" id="masterTolerance" min="5" max="200" value="65">
+            </div>
+          </div>
+        </div>
+      </details>
+
+      <!-- 2. PIXEL SORTING -->
+      <details class="effect-group">
+        <summary>Pixel Sort & Stack</summary>
+        <div class="group-body">
+          <label class="checkbox-row">
+            <span>Enable Pixel Sort</span>
+            <input type="checkbox" id="sortEnabled">
+          </label>
+          <div class="control-row">
+            <div class="control-header"><span>Direction</span></div>
+            <select id="sortDirection">
+              <option value="horizontal">Horizontal</option>
+              <option value="vertical">Vertical</option>
+            </select>
+          </div>
+          <div class="control-row">
+            <div class="control-header">
+              <span>Threshold / Intensity</span>
+              <span class="control-val" id="sortThresholdVal">110</span>
+            </div>
+            <input type="range" id="sortThreshold" min="0" max="255" value="110">
+          </div>
+          <div class="control-row">
+            <div class="control-header">
+              <span>Max Streak Length</span>
+              <span class="control-val" id="sortLengthVal">120px</span>
+            </div>
+            <input type="range" id="sortLength" min="10" max="600" value="120">
+          </div>
+          <div class="control-row">
+            <div class="control-header"><span>Sort By</span></div>
+            <select id="sortBy"><option value="lum">Brightness</option><option value="hue">Hue</option><option value="sat">Saturation</option><option value="red">Red</option><option value="green">Green</option><option value="blue">Blue</option></select>
+          </div>
+          <label class="checkbox-row"><span>Reverse Order (bright → dark)</span><input type="checkbox" id="sortReverse"></label>
+
+          <!-- Tool Isolation Mask Block -->
+          <div class="tool-mask-container" id="sortMaskWrapper">
+            <span class="mask-title">Sorting Color Target</span>
+            <div class="toggle-pill scope-toggle" data-tool="sort">
+              <button type="button" data-mode="global" class="active">Global</button>
+              <button type="button" data-mode="color">Color Range</button>
+            </div>
+            <div class="tool-color-fields hidden" id="sortColorFields">
+              <div class="color-picker-row">
+                <input type="color" id="sortColor" value="#ff0055">
+                <button class="btn eyedropper-btn" data-target="sort" style="flex:1; padding:4px 8px; font-size:11px;">Sample Canvas</button>
+              </div>
+              <div class="control-row" style="margin-top:4px;">
+                <div class="control-header"><span>Tolerance</span><span class="control-val" id="sortToleranceVal">65</span></div>
+                <input type="range" id="sortTolerance" min="5" max="200" value="65">
+              </div>
+            </div>
+          </div>
+        </div>
+      </details>
+
+      <!-- 3. CHROMATIC ABERRATION & CHANNELS -->
+      <details class="effect-group">
+        <summary>Chromatic Aberration FX</summary>
+        <div class="group-body">
+          <div class="control-row">
+            <div class="control-header">
+              <span>Chromatic Aberration</span>
+              <span class="control-val" id="aberrationVal">0px</span>
+            </div>
+            <input type="range" id="aberrationAmount" min="0" max="80" value="0">
+          </div>
+          <div class="control-row">
+            <div class="control-header">
+              <span>Aberration Angle</span>
+              <span class="control-val" id="aberrationAngleVal">0°</span>
+            </div>
+            <input type="range" id="aberrationAngle" min="0" max="360" value="0">
+          </div>
+          <hr style="border:0; border-top:1px solid var(--border);">
+          <div class="control-row">
+            <div class="control-header">
+              <span>Red Channel X / Y</span>
+              <span class="control-val" id="redOffsetVal">0, 0</span>
+            </div>
+            <div class="btn-grid">
+              <input type="range" id="redX" min="-100" max="100" value="0">
+              <input type="range" id="redY" min="-100" max="100" value="0">
+            </div>
+          </div>
+          <div class="control-row">
+            <div class="control-header">
+              <span>Green Channel X / Y</span>
+              <span class="control-val" id="greenOffsetVal">0, 0</span>
+            </div>
+            <div class="btn-grid">
+              <input type="range" id="greenX" min="-100" max="100" value="0">
+              <input type="range" id="greenY" min="-100" max="100" value="0">
+            </div>
+          </div>
+          <div class="control-row">
+            <div class="control-header">
+              <span>Blue Channel X / Y</span>
+              <span class="control-val" id="blueOffsetVal">0, 0</span>
+            </div>
+            <div class="btn-grid">
+              <input type="range" id="blueX" min="-100" max="100" value="0">
+              <input type="range" id="blueY" min="-100" max="100" value="0">
+            </div>
+          </div>
+
+          <!-- Tool Isolation Mask Block -->
+          <div class="tool-mask-container" id="chromaMaskWrapper">
+            <span class="mask-title">RGB Offset Color Target</span>
+            <div class="toggle-pill scope-toggle" data-tool="chroma">
+              <button type="button" data-mode="global" class="active">Global</button>
+              <button type="button" data-mode="color">Color Range</button>
+            </div>
+            <div class="tool-color-fields hidden" id="chromaColorFields">
+              <div class="color-picker-row">
+                <input type="color" id="chromaColor" value="#00f0ff">
+                <button class="btn eyedropper-btn" data-target="chroma" style="flex:1; padding:4px 8px; font-size:11px;">Sample Canvas</button>
+              </div>
+              <div class="control-row" style="margin-top:4px;">
+                <div class="control-header"><span>Tolerance</span><span class="control-val" id="chromaToleranceVal">65</span></div>
+                <input type="range" id="chromaTolerance" min="5" max="200" value="65">
+              </div>
+            </div>
+          </div>
+        </div>
+      </details>
+
+      <!-- 4. RANDOMIZE & SLICE TEAR -->
+      <details class="effect-group">
+        <summary>Slice Tear Randomizer</summary>
+        <div class="group-body">
+          <div class="control-row">
+            <div class="control-header">
+              <span>Pixel Scatter (Displacement)</span>
+              <span class="control-val" id="scatterVal">0%</span>
+            </div>
+            <input type="range" id="pixelScatter" min="0" max="100" value="0">
+          </div>
+          <div class="control-row">
+            <div class="control-header">
+              <span>Scatter Radius</span>
+              <span class="control-val" id="scatterRadiusVal">15px</span>
+            </div>
+            <input type="range" id="scatterRadius" min="1" max="100" value="15">
+          </div>
+          <div class="control-row">
+            <div class="control-header">
+              <span>Digital Grain / Noise</span>
+              <span class="control-val" id="noiseVal">0</span>
+            </div>
+            <input type="range" id="pixelNoise" min="0" max="150" value="0">
+          </div>
+          <div class="control-row">
+            <div class="control-header"><span>Grain Type</span></div>
+            <select id="noiseType"><option value="mono">Monochrome</option><option value="color">Color (per channel)</option></select>
+          </div>
+          <div class="control-row">
+            <div class="control-header">
+              <span>Slice Tear · Count</span>
+              <span class="control-val" id="sliceVal">0</span>
+            </div>
+            <input type="range" id="sliceAmount" min="0" max="40" value="0">
+          </div>
+          <div class="control-row">
+            <div class="control-header"><span>Tear Angle</span><span class="control-val" id="sliceAngleVal">0°</span></div>
+            <input type="range" id="sliceAngle" min="-90" max="90" value="0">
+          </div>
+          <div class="control-row">
+            <div class="control-header"><span>Max Slice Height</span><span class="control-val" id="sliceHeightVal">6%</span></div>
+            <input type="range" id="sliceHeight" min="1" max="30" value="6">
+          </div>
+          <div class="control-row">
+            <div class="control-header"><span>Max Shift</span><span class="control-val" id="sliceShiftVal">12%</span></div>
+            <input type="range" id="sliceShift" min="1" max="60" value="12">
+          </div>
+          <div class="control-row">
+            <div class="control-header"><span>Tear RGB Split</span><span class="control-val" id="sliceChromaVal">0%</span></div>
+            <input type="range" id="sliceChroma" min="0" max="100" value="0">
+          </div>
+          <div class="control-row">
+            <div class="control-header">
+              <span>Scanlines · Intensity</span>
+              <span class="control-val" id="scanlineVal">0%</span>
+            </div>
+            <input type="range" id="scanlineIntensity" min="0" max="90" value="0">
+          </div>
+          <div class="control-row">
+            <div class="control-header"><span>Scanline Angle</span><span class="control-val" id="scanAngleVal">0°</span></div>
+            <input type="range" id="scanAngle" min="-90" max="90" value="0">
+          </div>
+          <div class="control-row">
+            <div class="control-header"><span>Line Spacing</span><span class="control-val" id="scanSpacingVal">2px</span></div>
+            <input type="range" id="scanSpacing" min="2" max="24" value="2">
+          </div>
+          <div class="control-row">
+            <div class="control-header"><span>Line Thickness</span><span class="control-val" id="scanThickVal">1px</span></div>
+            <input type="range" id="scanThick" min="1" max="12" value="1">
+          </div>
+
+          <!-- Tool Isolation Mask Block -->
+          <div class="tool-mask-container" id="randomMaskWrapper">
+            <span class="mask-title">Randomization Color Target</span>
+            <div class="toggle-pill scope-toggle" data-tool="random">
+              <button type="button" data-mode="global" class="active">Global</button>
+              <button type="button" data-mode="color">Color Range</button>
+            </div>
+            <div class="tool-color-fields hidden" id="randomColorFields">
+              <div class="color-picker-row">
+                <input type="color" id="randomColor" value="#ffff00">
+                <button class="btn eyedropper-btn" data-target="random" style="flex:1; padding:4px 8px; font-size:11px;">Sample Canvas</button>
+              </div>
+              <div class="control-row" style="margin-top:4px;">
+                <div class="control-header"><span>Tolerance</span><span class="control-val" id="randomToleranceVal">65</span></div>
+                <input type="range" id="randomTolerance" min="5" max="200" value="65">
+              </div>
+            </div>
+          </div>
+        </div>
+      </details>
+
+      <!-- 5. TEXTURE DISTORTION -->
+      <details class="effect-group">
+        <summary>Texture Fractal FX</summary>
+        <div class="group-body">
+          <p class="offline-note">Procedural textures are generated locally in your browser.</p>
+          <div class="control-row">
+            <div class="control-header"><span>Fractal Pattern</span></div>
+            <select id="texturePattern">
+              <option value="mandelbrot">Mandelbrot</option>
+              <option value="julia">Julia Set</option>
+              <option value="burning-ship">Burning Ship</option>
+              <option value="plasma">Fractal Plasma</option>
+            </select>
+          </div>
+          <div class="control-row">
+            <div class="control-header"><span>Texture Effect</span></div>
+            <select id="textureMode">
+              <option value="blend">Blend Texture</option>
+              <option value="randomize">Randomize Pixel Colors</option>
+              <option value="stack">Stack Mid-tones Upward</option>
+            </select>
+          </div>
+          <div class="control-row" id="textureBlendControls">
+            <div class="control-header"><span>Blend Mode</span></div>
+            <select id="textureBlendMode">
+              <option value="screen">Screen</option>
+              <option value="multiply">Multiply</option>
+              <option value="overlay">Overlay</option>
+              <option value="color-dodge">Color Dodge</option>
+              <option value="color-burn">Color Burn</option>
+              <option value="difference">Difference</option>
+              <option value="soft-light">Soft Light</option>
+            </select>
+          </div>
+          <div class="control-row">
+            <div class="control-header">
+              <span>Texture Scale</span>
+              <span class="control-val" id="textureScaleVal">4.0×</span>
+            </div>
+            <input type="range" id="textureScale" min="1" max="12" value="4">
+          </div>
+          <div class="control-row">
+            <div class="control-header">
+              <span>Effect Strength</span>
+              <span class="control-val" id="textureStrengthVal">0%</span>
+            </div>
+            <input type="range" id="textureStrength" min="0" max="100" value="0">
+          </div>
+          <div class="control-row" id="textureThresholdControl">
+            <div class="control-header">
+              <span>Mid-tone Range / Random Threshold</span>
+              <span class="control-val" id="textureThresholdVal">24%</span>
+            </div>
+            <input type="range" id="textureThreshold" min="5" max="45" value="24">
+          </div>
+          <div class="control-row hidden" id="textureStackControls">
+            <div class="control-header">
+              <span>Stack Height</span>
+              <span class="control-val" id="textureStackHeightVal">3px</span>
+            </div>
+            <input type="range" id="textureStackHeight" min="1" max="12" value="3">
+          </div>
+        </div>
+      </details>
+
+      <!-- 6. RECURSIVE AI-STYLE HALLUCINATION -->
+      <details class="effect-group">
+        <summary>Recursive Dream FX</summary>
+        <div class="group-body">
+          <p class="offline-note">A local, multi-pass feedback effect. Each pass zooms into the previous pass, feeds the result back through the image, and amplifies emerging edges and patterns. It is procedural—not a connected AI model.</p>
+          <div class="control-row">
+            <div class="control-header"><span>Dream Behaviour</span></div>
+            <select id="dreamStyle">
+              <option value="dream">Recursive Feature Dream</option>
+              <option value="feedback">Recursive Echo / Feedback</option>
+            </select>
+          </div>
+          <div class="control-row">
+            <div class="control-header">
+              <span>Dream Intensity</span>
+              <span class="control-val" id="dreamStrengthVal">0%</span>
+            </div>
+            <input type="range" id="dreamStrength" min="0" max="100" value="0">
+          </div>
+          <div class="control-row">
+            <div class="control-header">
+              <span>Feature Detail Scale</span>
+              <span class="control-val" id="dreamScaleVal">6px</span>
+            </div>
+            <input type="range" id="dreamScale" min="1" max="24" value="6">
+          </div>
+          <div class="control-row">
+            <div class="control-header">
+              <span>Recursive Passes</span>
+              <span class="control-val" id="dreamIterationsVal">5</span>
+            </div>
+            <input type="range" id="dreamIterations" min="1" max="12" value="5">
+          </div>
+          <div class="control-row">
+            <div class="control-header">
+              <span>Inward Zoom per Pass</span>
+              <span class="control-val" id="dreamZoomVal">3.5%</span>
+            </div>
+            <input type="range" id="dreamZoom" min="5" max="90" value="35">
+          </div>
+        </div>
+      </details>
+
+      <!-- 7. STANDALONE RETRO PIXELATOR & PALETTE QUANTIZER -->
+      <details class="effect-group">
+        <summary>Pixelator & Palettizer</summary>
+        <div class="group-body">
+          <p class="offline-note">Independent pixel-art conversion. This panel does not warp, wobble, or distort the image.</p>
+          <label class="checkbox-row">
+            <span>Enable Retro Pixelator</span>
+            <input type="checkbox" id="retroEnabled">
+          </label>
+          <div class="control-row">
+            <div class="control-header"><span>Color Palette</span></div>
+            <select id="retroPalette">
+              <option value="gameboy">Game Boy · 4 tone</option>
+              <option value="pico8">PICO-8 inspired</option>
+              <option value="dawnbringer">DawnBringer inspired</option>
+              <option value="cga">CGA / DOS</option>
+              <option value="vaporwave">Vaporwave</option>
+              <option value="amiga">Amiga 16</option>
+              <option value="mono">Black & White</option>
+              <option value="custom">Custom color count · sampled</option>
+            </select>
+          </div>
+          <div class="control-row">
+            <div class="control-header">
+              <span>Pixel Block Size</span>
+              <span class="control-val" id="retroPixelSizeVal">6px</span>
+            </div>
+            <input type="range" id="retroPixelSize" min="1" max="32" value="6">
+          </div>
+          <div class="control-row">
+            <div class="control-header">
+              <span>Palette Colors</span>
+              <span class="control-val" id="retroColorCountVal">8</span>
+            </div>
+            <input type="range" id="retroColorCount" min="2" max="16" value="8">
+          </div>
+          <div class="control-row">
+            <div class="control-header">
+              <span>Pixelator Strength</span>
+              <span class="control-val" id="retroStrengthVal">100%</span>
+            </div>
+            <input type="range" id="retroStrength" min="0" max="100" value="100">
+          </div>
+        </div>
+      </details>
+
+      <!-- 8. VHS TAPE ROT -->
+      <details class="effect-group">
+        <summary>VHS Damage FX</summary>
+        <div class="group-body">
+          <p class="offline-note">Simulates deteriorating magnetic tape: uneven horizontal tracking, waveform-like displacement, color dropout, and damaged signal bands.</p>
+          <label class="checkbox-row">
+            <span>Enable VHS fx</span>
+            <input type="checkbox" id="vhsEnabled">
+          </label>
+          <div class="control-row">
+            <div class="control-header">
+              <span>Rot / Tracking Damage</span>
+              <span class="control-val" id="vhsStrengthVal">45%</span>
+            </div>
+            <input type="range" id="vhsStrength" min="0" max="100" value="45">
+          </div>
+          <div class="control-row">
+            <div class="control-header">
+              <span>Signal Dropout</span>
+              <span class="control-val" id="vhsDropoutVal">35%</span>
+            </div>
+            <input type="range" id="vhsDropout" min="0" max="100" value="35">
+          </div>
+          <div class="control-row">
+            <div class="control-header">
+              <span>Color Loss</span>
+              <span class="control-val" id="vhsColorLossVal">55%</span>
+            </div>
+            <input type="range" id="vhsColorLoss" min="0" max="100" value="55">
+          </div>
+          <div class="control-row">
+            <div class="control-header">
+              <span>Damage Bands / Density</span>
+              <span class="control-val" id="vhsBandsVal">18</span>
+            </div>
+            <input type="range" id="vhsBands" min="2" max="60" value="18">
+          </div>
+        </div>
+      </details>
+
+      <!-- BLOCK CORRUPT -->
+      <details class="effect-group">
+        <summary>Block Datamosh FX</summary>
+        <div class="group-body">
+          <label class="checkbox-row"><span>Enable Block Corruption</span><input type="checkbox" id="blockEnabled"></label>
+          <div class="control-row">
+            <div class="control-header"><span>Corruption Style</span></div>
+            <select id="blockMode"><option value="mixed">Mixed</option><option value="shift">Displace Blocks</option><option value="smear">Smear Blocks</option><option value="crush">Color Crush</option></select>
+          </div>
+          <div class="control-row">
+            <div class="control-header"><span>Block Size</span><span class="control-val" id="blockSizeVal">32px</span></div>
+            <input type="range" id="blockSize" min="4" max="128" value="32">
+          </div>
+          <div class="control-row">
+            <div class="control-header"><span>Corrupted Blocks</span><span class="control-val" id="blockDensityVal">20%</span></div>
+            <input type="range" id="blockDensity" min="0" max="100" value="20">
+          </div>
+          <div class="control-row">
+            <div class="control-header"><span>Max Displacement (blocks)</span><span class="control-val" id="blockShiftVal">6</span></div>
+            <input type="range" id="blockShift" min="1" max="20" value="6">
+          </div>
+        </div>
+      </details>
+
+      <!-- WAVE WARP -->
+      <details class="effect-group">
+        <summary>Warp Distort FX</summary>
+        <div class="group-body">
+          <label class="checkbox-row"><span>Enable Wave Warp</span><input type="checkbox" id="waveEnabled"></label>
+          <div class="control-row">
+            <div class="control-header"><span>Wave Shape</span></div>
+            <select id="waveShape"><option value="sine">Sine</option><option value="stepped">Stepped Bands</option><option value="ripple">Radial Ripple</option></select>
+          </div>
+          <div class="control-row">
+            <div class="control-header"><span>Amplitude</span><span class="control-val" id="waveAmpVal">24px</span></div>
+            <input type="range" id="waveAmp" min="0" max="150" value="24">
+          </div>
+          <div class="control-row">
+            <div class="control-header"><span>Wavelength</span><span class="control-val" id="waveLenVal">160px</span></div>
+            <input type="range" id="waveLen" min="10" max="800" value="160">
+          </div>
+          <div class="control-row">
+            <div class="control-header"><span>Wave Angle</span><span class="control-val" id="waveAngleVal">0°</span></div>
+            <input type="range" id="waveAngle" min="0" max="360" value="0">
+          </div>
+          <div class="control-row">
+            <div class="control-header"><span>Turbulence</span><span class="control-val" id="waveTurbVal">25%</span></div>
+            <input type="range" id="waveTurb" min="0" max="100" value="25">
+          </div>
+        </div>
+      </details>
+
+      <!-- 9. DOUBLE EXPOSURE -->
+      <details class="effect-group">
+        <summary>Double Exposure FX</summary>
+        <div class="group-body">
+          <input type="file" id="doubleExposureInput" accept="image/*,.heic,.heif,.hif,.avif,.webp,.gif,.bmp,.tif,.tiff,.jfif,.jpe,.svg,.ico,.apng" class="hidden">
+          <div class="btn-grid">
+            <button class="btn" onclick="document.getElementById('doubleExposureInput').click()">Load 2nd Image</button>
+            <button class="btn btn-danger" id="clearDoubleBtn">Clear 2nd</button>
+          </div>
+          <div class="control-row">
+            <div class="control-header"><span>Blend Mode</span></div>
+            <select id="doubleBlendMode">
+              <option value="screen">Screen</option>
+              <option value="lighten">Lighten</option>
+              <option value="overlay">Overlay</option>
+              <option value="difference">Difference (Glitch)</option>
+              <option value="exclusion">Exclusion</option>
+              <option value="multiply">Multiply</option>
+              <option value="color-dodge">Color Dodge</option>
+            </select>
+          </div>
+          <div class="control-row">
+            <div class="control-header">
+              <span>Exposure Opacity</span>
+              <span class="control-val" id="doubleOpacityVal">50%</span>
+            </div>
+            <input type="range" id="doubleOpacity" min="0" max="100" value="50">
+          </div>
+        </div>
+      </details>
+
+      <!-- 8. TEXT OVERLAY -->
+      <details class="effect-group">
+        <summary>Text Overlay Add-on</summary>
+        <div class="group-body">
+          <div class="control-row">
+            <div class="control-header"><span>Text Content</span></div>
+            <input type="text" id="textContent" placeholder="Enter glitch text...">
+          </div>
+          <div class="btn-grid">
+            <div class="control-row">
+              <div class="control-header"><span>Font</span></div>
+              <select id="textFont">
+                <option value="Impact, sans-serif">Impact</option>
+                <option value="'Courier New', monospace">Monospace</option>
+                <option value="Arial Black, sans-serif">Arial Black</option>
+                <option value="Georgia, serif">Serif</option>
+              </select>
+            </div>
+            <div class="control-row">
+              <div class="control-header"><span>Color</span></div>
+              <input type="color" id="textColor" value="#ffffff" style="width:100%; height:31px;">
+            </div>
+          </div>
+          <div class="control-row">
+            <div class="control-header">
+              <span>Font Size</span>
+              <span class="control-val" id="textSizeVal">64px</span>
+            </div>
+            <input type="range" id="textSize" min="12" max="240" value="64">
+          </div>
+          <div class="btn-grid">
+            <div class="control-row">
+              <div class="control-header"><span>Pos X</span><span class="control-val" id="textXVal">50%</span></div>
+              <input type="range" id="textX" min="0" max="100" value="50">
+            </div>
+            <div class="control-row">
+              <div class="control-header"><span>Pos Y</span><span class="control-val" id="textYVal">50%</span></div>
+              <input type="range" id="textY" min="0" max="100" value="50">
+            </div>
+          </div>
+          <label class="checkbox-row">
+            <span>RGB Text Glitch Shadow</span>
+            <input type="checkbox" id="textGlitch" checked>
+          </label>
+        </div>
+      </details>
+
+      <!-- CROP -->
+      <details class="effect-group">
+        <summary>Crop Function</summary>
+        <div class="group-body">
+          <div class="control-row">
+            <div class="control-header"><span>Aspect Preset</span></div>
+            <select id="cropAspect"><option value="free">Free</option><option value="1:1">1:1 Square</option><option value="4:5">4:5 Portrait</option><option value="5:4">5:4</option><option value="3:2">3:2</option><option value="2:3">2:3</option><option value="4:3">4:3</option><option value="3:4">3:4</option><option value="16:9">16:9</option><option value="9:16">9:16 Story</option></select>
+          </div>
+          <div class="control-row">
+            <div class="control-header"><span>Trim Left</span><span class="control-val" id="cropLVal">0%</span></div>
+            <input type="range" id="cropL" min="0" max="90" value="0">
+          </div>
+          <div class="control-row">
+            <div class="control-header"><span>Trim Right</span><span class="control-val" id="cropRVal">0%</span></div>
+            <input type="range" id="cropR" min="0" max="90" value="0">
+          </div>
+          <div class="control-row">
+            <div class="control-header"><span>Trim Top</span><span class="control-val" id="cropTVal">0%</span></div>
+            <input type="range" id="cropT" min="0" max="90" value="0">
+          </div>
+          <div class="control-row">
+            <div class="control-header"><span>Trim Bottom</span><span class="control-val" id="cropBVal">0%</span></div>
+            <input type="range" id="cropB" min="0" max="90" value="0">
+          </div>
+          <button class="btn" id="cropResetBtn">Reset Crop</button>
+        </div>
+      </details>
+
+      <!-- 9. EXPORT HIGH-RES -->
+      <details class="effect-group" open>
+        <summary>Export High-Res</summary>
+        <div class="group-body">
+          <div class="btn-grid-3">
+            <button class="btn btn-primary" onclick="exportImage('png')">PNG</button>
+            <button class="btn btn-primary" onclick="exportImage('jpg')">JPG</button>
+            <button class="btn btn-primary" onclick="exportPDF()">PDF</button>
+          </div>
+        </div>
+      </details>
+
+    </div>
+  </aside>
+
+  <main id="viewport-wrapper">
+    <header id="topbar">
+      <button class="btn" id="toggleSidebarBtn">☰ Panels</button>
+      <div class="status-info" id="resolutionDisplay">NO IMAGE LOADED</div>
+      <button class="btn" id="reseedBtn" title="Randomize glitch seed">↻ Reseed Glitch</button>
+    </header>
+
+    <div id="canvas-container">
+      <div id="empty-state">
+        <h2>GLITCHRIP STUDIO</h2>
+        <p>Upload an image from the left panel or drop a file anywhere here to start corrupting pixels.</p>
+        <button class="btn btn-primary" onclick="document.getElementById('baseImageInput').click()">Select Image</button>
+      </div>
+      <canvas id="mainCanvas" class="hidden"></canvas>
+    </div>
+  </main>
+
+<script>
+  // State Management 
+  const state = {
+    baseImg: null,
+    secondImg: null,
+    seed: 1337,
+    masterOverride: 'none', // 'none' | 'force-global' | 'force-color'
+    masterRGB: { r: 0, g: 240, b: 255 },
+    masterTolerance: 65,
+    pickingTarget: null, // string matching target tool when picker is working
+
+    // Tool Specific Targets
+    tools: {
+      sort: { mode: 'global', rgb: { r: 255, g: 0, b: 85 }, tol: 65 },
+      chroma: { mode: 'global', rgb: { r: 0, g: 240, b: 255 }, tol: 65 },
+      random: { mode: 'global', rgb: { r: 255, g: 255, b: 0 }, tol: 65 }
+    }
+  };
+
+  const canvas = document.getElementById('mainCanvas');
+  const ctx = canvas.getContext('2d', { willReadFrequently: true });
+
+  const srcCanvas = document.createElement('canvas');
+  const srcCtx = srcCanvas.getContext('2d', { willReadFrequently: true });
+
+  function mulberry32(a) {
+    return function() {
+      let t = a += 0x6D2B79F5;
+      t = Math.imul(t ^ t >>> 15, t | 1);
+      t ^= t + Math.imul(t ^ t >>> 7, t | 61);
+      return ((t ^ t >>> 14) >>> 0) / 4294967296;
+    };
+  }
+
+  let textureCacheKey = '';
+  let textureCache = null;
+
+  function getTextureField(width, height) {
+    const pattern = document.getElementById('texturePattern').value;
+    const zoom = parseInt(document.getElementById('textureScale').value, 10);
+    const key = `${width}x${height}:${pattern}:${zoom}`;
+    if (key === textureCacheKey) return textureCache;
+
+    const factor = Math.min(1, 512 / Math.max(width, height));
+    const fieldWidth = Math.max(1, Math.round(width * factor));
+    const fieldHeight = Math.max(1, Math.round(height * factor));
+    const values = new Float32Array(fieldWidth * fieldHeight);
+    const maxIterations = 32;
+
+    for (let y = 0; y < fieldHeight; y++) {
+      const ny = fieldHeight === 1 ? 0.5 : y / (fieldHeight - 1);
+      for (let x = 0; x < fieldWidth; x++) {
+        const nx = fieldWidth === 1 ? 0.5 : x / (fieldWidth - 1);
+        let value;
+
+        if (pattern === 'plasma') {
+          value = (Math.sin(nx * 18 * zoom + Math.cos(ny * 9 * zoom)) +
+            Math.cos(ny * 15 * zoom + Math.sin(nx * 11 * zoom)) + 2) / 4;
+        } else {
+          let real;
+          let imaginary;
+          let cReal;
+          let cImaginary;
+          if (pattern === 'julia') {
+            real = (nx * 3.2 - 1.6) / zoom;
+            imaginary = (ny * 2.4 - 1.2) / zoom;
+            cReal = -0.745;
+            cImaginary = 0.186;
+          } else {
+            real = (nx * 3.5 - 2.5) / zoom;
+            imaginary = (ny * 2.5 - 1.25) / zoom;
+            cReal = real;
+            cImaginary = imaginary;
+            if (pattern !== 'burning-ship') {
+              real = 0;
+              imaginary = 0;
+            }
+          }
+
+          let iteration = 0;
+          while (iteration < maxIterations && real * real + imaginary * imaginary <= 16) {
+            let zReal = real;
+            let zImaginary = imaginary;
+            if (pattern === 'burning-ship') {
+              zReal = Math.abs(real);
+              zImaginary = Math.abs(imaginary);
+            }
+            imaginary = 2 * zReal * zImaginary + cImaginary;
+            real = zReal * zReal - zImaginary * zImaginary + cReal;
+            iteration++;
+          }
+          value = iteration === maxIterations ? 0 : iteration / maxIterations;
+        }
+
+        values[y * fieldWidth + x] = value;
+      }
+    }
+
+    textureCacheKey = key;
+    textureCache = { width: fieldWidth, height: fieldHeight, values };
+    return textureCache;
+  }
+
+  function blendTextureChannel(base, texture, mode) {
+    if (mode === 'screen') return 255 - ((255 - base) * (255 - texture)) / 255;
+    if (mode === 'multiply') return (base * texture) / 255;
+    if (mode === 'overlay') {
+      return base < 128 ? (2 * base * texture) / 255 :
+        255 - (2 * (255 - base) * (255 - texture)) / 255;
+    }
+    if (mode === 'color-dodge') return texture >= 255 ? 255 : Math.min(255, (base * 255) / (255 - texture));
+    if (mode === 'color-burn') return texture <= 0 ? 0 : 255 - Math.min(255, ((255 - base) * 255) / texture);
+    if (mode === 'difference') return Math.abs(base - texture);
+    if (mode === 'soft-light') {
+      const b = base / 255;
+      const t = texture / 255;
+      const result = t < 0.5 ? b - (1 - 2 * t) * b * (1 - b) :
+        b + (2 * t - 1) * ((b <= 0.25 ? ((16 * b - 12) * b + 4) * b : Math.sqrt(b)) - b);
+      return result * 255;
+    }
+    return texture;
+  }
+
+  // Sidebar Toggle
+  document.getElementById('toggleSidebarBtn').addEventListener('click', () => {
+    document.getElementById('sidebar').classList.toggle('collapsed');
+  });
+
+  // Master Override Select Changing
+  const masterSelect = document.getElementById('masterOverrideSelect');
+  const masterColorControls = document.getElementById('masterColorControls');
+  masterSelect.addEventListener('change', (e) => {
+    state.masterOverride = e.target.value;
+    if (state.masterOverride === 'force-color') {
+      masterColorControls.classList.remove('hidden');
+    } else {
+      masterColorControls.classList.add('hidden');
+    }
+    renderPipeline();
+  });
+
+  // Tool Specific Scope Pill Buttons Configuration
+  document.querySelectorAll('.scope-toggle').forEach(pill => {
+    const toolKey = pill.dataset.tool;
+    const buttons = pill.querySelectorAll('button');
+    const colorFields = document.getElementById(`${toolKey}ColorFields`);
+
+    buttons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        buttons.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        state.tools[toolKey].mode = btn.dataset.mode;
+        
+        if (state.tools[toolKey].mode === 'color') {
+          colorFields.classList.remove('hidden');
+        } else {
+          colorFields.classList.add('hidden');
+          if (state.pickingTarget === toolKey) cancelEyedropper();
+        }
+        renderPipeline();
+      });
+    });
+  });
+
+  function updateTextureControlVisibility() {
+    const mode = document.getElementById('textureMode').value;
+    document.getElementById('textureBlendControls').classList.toggle('hidden', mode !== 'blend');
+    document.getElementById('textureThresholdControl').classList.toggle('hidden', mode === 'blend');
+    document.getElementById('textureStackControls').classList.toggle('hidden', mode !== 'stack');
+  }
+
+  document.getElementById('textureMode').addEventListener('change', updateTextureControlVisibility);
+  updateTextureControlVisibility();
+
+  // Eyedropper sampling setup
+  document.querySelectorAll('.eyedropper-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      if (!state.baseImg) return;
+      const target = e.target.dataset.target;
+      
+      if (state.pickingTarget === target) {
+        cancelEyedropper();
+      } else {
+        state.pickingTarget = target;
+        canvas.classList.add('eyedropper-active');
+        e.target.textContent = 'Click Image...';
+      }
+    });
+  });
+
+  function cancelEyedropper() {
+    state.pickingTarget = null;
+    canvas.classList.remove('eyedropper-active');
+    document.querySelectorAll('.eyedropper-btn').forEach(btn => {
+      const tgt = btn.dataset.target;
+      btn.textContent = tgt === 'master' ? 'Pick From Image' : 'Sample Canvas';
+    });
+  }
+
+  // Handle Eyedropper click events on drawing context canvas
+  canvas.addEventListener('click', (e) => {
+    if (!state.pickingTarget || !state.baseImg) return;
+    const rect = canvas.getBoundingClientRect();
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+    const x = Math.floor((e.clientX - rect.left) * scaleX);
+    const y = Math.floor((e.clientY - rect.top) * scaleY);
+
+    const pixel = srcCtx.getImageData(x, y, 1, 1).data;
+    const rgb = { r: pixel[0], g: pixel[1], b: pixel[2] };
+    const hexString = rgbToHex(pixel[0], pixel[1], pixel[2]);
+
+    if (state.pickingTarget === 'master') {
+      state.masterRGB = rgb;
+      document.getElementById('masterColor').value = hexString;
+    } else {
+      state.tools[state.pickingTarget].rgb = rgb;
+      document.getElementById(`${state.pickingTarget}Color`).value = hexString;
+    }
+
+    cancelEyedropper();
+    renderPipeline();
+  });
+
+  function hexToRgb(hex) {
+    const num = parseInt(hex.replace('#', ''), 16);
+    return { r: (num >> 16) & 255, g: (num >> 8) & 255, b: num & 255 };
+  }
+
+  function rgbToHex(r, g, b) {
+    return "#" + [r, g, b].map(x => x.toString(16).padStart(2, '0')).join('');
+  }
+
+  // Connect local variables when manual inputs are touched
+  document.getElementById('masterColor').addEventListener('input', (e) => { state.masterRGB = hexToRgb(e.target.value); renderPipeline(); });
+  document.getElementById('sortColor').addEventListener('input', (e) => { state.tools.sort.rgb = hexToRgb(e.target.value); renderPipeline(); });
+  document.getElementById('chromaColor').addEventListener('input', (e) => { state.tools.chroma.rgb = hexToRgb(e.target.value); renderPipeline(); });
+  document.getElementById('randomColor').addEventListener('input', (e) => { state.tools.random.rgb = hexToRgb(e.target.value); renderPipeline(); });
+
+  // Core Evaluation Mask Logic
+  function evaluatePixelSelection(toolKey, r, g, b) {
+    if (state.masterOverride === 'force-global') return true;
+    if (state.masterOverride === 'force-color') {
+      const dr = r - state.masterRGB.r;
+      const dg = g - state.masterRGB.g;
+      const db = b - state.masterRGB.b;
+      return (dr * dr + dg * dg + db * db) <= (state.masterTolerance * state.masterTolerance * 3);
+    }
+
+    const localConf = state.tools[toolKey];
+    if (!localConf || localConf.mode === 'global') return true;
+
+    const dr = r - localConf.rgb.r;
+    const dg = g - localConf.rgb.g;
+    const db = b - localConf.rgb.b;
+    return (dr * dr + dg * dg + db * db) <= (localConf.tol * localConf.tol * 3);
+  }
+
+  // ===== Image decoding (HEIC/HEIF, TIFF, AVIF, WebP, GIF, BMP, SVG, JPG, PNG ...) =====
+  const MAX_DIM = 3200;
+  const scriptCache = {};
+  function ensureScript(src, test) {
+    if (test()) return Promise.resolve();
+    return scriptCache[src] || (scriptCache[src] = new Promise((res, rej) => {
+      const s = document.createElement('script');
+      s.src = src; s.onload = res;
+      s.onerror = () => { delete scriptCache[src]; rej(new Error('Decoder could not load (internet needed for this format)')); };
+      document.head.appendChild(s);
+    }));
+  }
+  function blobToImage(blob) {
+    return new Promise((res, rej) => {
+      const url = URL.createObjectURL(blob), img = new Image();
+      img.onload = () => { URL.revokeObjectURL(url); img.naturalWidth ? res(img) : rej(new Error('Image has no dimensions')); };
+      img.onerror = () => { URL.revokeObjectURL(url); rej(new Error('Browser cannot decode this file')); };
+      img.src = url;
+    });
+  }
+  function capSize(img) {
+    const m = Math.max(img.naturalWidth, img.naturalHeight);
+    if (m <= MAX_DIM) return img;
+    const k = MAX_DIM / m, c = document.createElement('canvas');
+    c.width = Math.round(img.naturalWidth * k); c.height = Math.round(img.naturalHeight * k);
+    c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+    c.naturalWidth = c.width; c.naturalHeight = c.height;
+    return c;
+  }
+  async function decodeFile(file) {
+    const ext = (file.name.split('.').pop() || '').toLowerCase();
+    const type = (file.type || '').toLowerCase();
+    const isHeic = /hei[cf]/.test(type) || ['heic', 'heif', 'hif'].includes(ext);
+    const isTiff = /tiff/.test(type) || ['tif', 'tiff'].includes(ext);
+    let img;
+    if (isHeic) {
+      try { img = await blobToImage(file); } // Safari decodes HEIC natively
+      catch (e) {
+        await ensureScript('https://cdn.jsdelivr.net/npm/heic2any@0.0.4/dist/heic2any.min.js', () => window.heic2any);
+        let out = await window.heic2any({ blob: file, toType: 'image/jpeg', quality: 0.95 });
+        img = await blobToImage(Array.isArray(out) ? out[0] : out);
+      }
+    } else if (isTiff) {
+      try { img = await blobToImage(file); }
+      catch (e) {
+        await ensureScript('https://cdn.jsdelivr.net/npm/utif@3.1.0/UTIF.js', () => window.UTIF);
+        const buf = await file.arrayBuffer(), ifds = UTIF.decode(buf);
+        UTIF.decodeImage(buf, ifds[0]);
+        const c = document.createElement('canvas'); c.width = ifds[0].width; c.height = ifds[0].height;
+        c.getContext('2d').putImageData(new ImageData(new Uint8ClampedArray(UTIF.toRGBA8(ifds[0])), c.width, c.height), 0, 0);
+        img = await blobToImage(await new Promise(r => c.toBlob(r, 'image/png')));
+      }
+    } else {
+      img = await blobToImage(file);
+    }
+    return capSize(img);
+  }
+
+  async function loadBaseImage(file) {
+    if (!file) return;
+    const status = document.getElementById('resolutionDisplay');
+    status.textContent = 'DECODING ' + file.name.toUpperCase() + '…';
+    try {
+      state.baseImg = await decodeFile(file);
+      ['cropL', 'cropT', 'cropR', 'cropB'].forEach(id => document.getElementById(id).value = 0);
+      document.getElementById('cropAspect').value = 'free';
+      applyCrop();
+      document.getElementById('empty-state').classList.add('hidden');
+      canvas.classList.remove('hidden');
+      updateLabels();
+      renderPipeline();
+    } catch (err) {
+      status.textContent = 'FAILED: ' + err.message.toUpperCase();
+    }
+  }
+
+  // ===== Crop =====
+  function applyCrop() {
+    const img = state.baseImg; if (!img) return;
+    const g = id => parseInt(document.getElementById(id).value, 10);
+    const iw = img.naturalWidth, ih = img.naturalHeight;
+    const sx = Math.round(iw * g('cropL') / 100), sy = Math.round(ih * g('cropT') / 100);
+    const sw = Math.max(8, Math.round(iw * (100 - g('cropL') - g('cropR')) / 100));
+    const sh = Math.max(8, Math.round(ih * (100 - g('cropT') - g('cropB')) / 100));
+    canvas.width = srcCanvas.width = sw; canvas.height = srcCanvas.height = sh;
+    srcCtx.drawImage(img, sx, sy, sw, sh, 0, 0, sw, sh);
+    document.getElementById('resolutionDisplay').textContent = `${sw} × ${sh} PX`;
+  }
+  [['cropL', 'cropR'], ['cropT', 'cropB']].forEach(([p, q]) => {
+    [p, q].forEach((id, n) => {
+      document.getElementById(id).addEventListener('input', () => {
+        const me = document.getElementById(id), other = document.getElementById(n ? p : q);
+        if (+me.value + +other.value > 90) me.value = 90 - other.value;
+        document.getElementById('cropAspect').value = 'free';
+        updateLabels(); applyCrop();
+      });
+    });
+  });
+  document.getElementById('cropAspect').addEventListener('input', (e) => {
+    if (!state.baseImg || e.target.value === 'free') return;
+    const [a, b] = e.target.value.split(':').map(Number);
+    const target = a / b, cur = state.baseImg.naturalWidth / state.baseImg.naturalHeight;
+    let L = 0, T = 0;
+    if (cur > target) L = Math.round(50 * (1 - target / cur)); else T = Math.round(50 * (1 - cur / target));
+    cropL.value = cropR.value = Math.min(45, L); cropT.value = cropB.value = Math.min(45, T);
+    updateLabels(); applyCrop();
+  });
+  document.getElementById('cropResetBtn').addEventListener('click', () => {
+    ['cropL', 'cropT', 'cropR', 'cropB'].forEach(id => document.getElementById(id).value = 0);
+    document.getElementById('cropAspect').value = 'free';
+    updateLabels(); applyCrop(); renderPipeline();
+  });
+
+  document.getElementById('baseImageInput').addEventListener('change', (e) => { loadBaseImage(e.target.files[0]); });
+
+  const viewport = document.getElementById('viewport-wrapper');
+  viewport.addEventListener('dragover', (e) => e.preventDefault());
+  viewport.addEventListener('drop', (e) => {
+    e.preventDefault();
+    if (e.dataTransfer.files.length) loadBaseImage(e.dataTransfer.files[0]);
+  });
+
+  document.getElementById('doubleExposureInput').addEventListener('change', async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    try { state.secondImg = await decodeFile(file); renderPipeline(); }
+    catch (err) { alert('Could not load second image: ' + err.message); }
+  });
+
+  document.getElementById('clearDoubleBtn').addEventListener('click', () => {
+    state.secondImg = null;
+    document.getElementById('doubleExposureInput').value = '';
+    renderPipeline();
+  });
+
+  document.getElementById('reseedBtn').addEventListener('click', () => {
+    state.seed = Math.floor(Math.random() * 100000);
+    renderPipeline();
+  });
+
+  document.getElementById('resetAllBtn').addEventListener('click', () => {
+    document.getElementById('sortEnabled').checked = false;
+    document.getElementById('aberrationAmount').value = 0;
+    document.getElementById('redX').value = 0;
+    document.getElementById('redY').value = 0;
+    document.getElementById('greenX').value = 0;
+    document.getElementById('greenY').value = 0;
+    document.getElementById('blueX').value = 0;
+    document.getElementById('blueY').value = 0;
+    document.getElementById('pixelScatter').value = 0;
+    document.getElementById('pixelNoise').value = 0;
+    document.getElementById('sliceAmount').value = 0;
+    document.getElementById('scanlineIntensity').value = 0;
+    document.getElementById('texturePattern').value = 'mandelbrot';
+    document.getElementById('textureMode').value = 'blend';
+    document.getElementById('textureBlendMode').value = 'screen';
+    document.getElementById('textureScale').value = 4;
+    document.getElementById('textureStrength').value = 0;
+    document.getElementById('textureThreshold').value = 24;
+    document.getElementById('textureStackHeight').value = 3;
+    document.getElementById('dreamStyle').value = 'dream';
+    document.getElementById('dreamStrength').value = 0;
+    document.getElementById('dreamScale').value = 6;
+    document.getElementById('dreamIterations').value = 5;
+    document.getElementById('dreamZoom').value = 35;
+    document.getElementById('retroEnabled').checked = false;
+    document.getElementById('retroPalette').value = 'gameboy';
+    document.getElementById('retroPixelSize').value = 6;
+    document.getElementById('retroColorCount').value = 8;
+    document.getElementById('retroStrength').value = 100;
+    document.getElementById('vhsEnabled').checked = false;
+    document.getElementById('vhsStrength').value = 45;
+    document.getElementById('vhsDropout').value = 35;
+    document.getElementById('vhsColorLoss').value = 55;
+    document.getElementById('vhsBands').value = 18;
+    document.getElementById('textContent').value = '';
+    Object.entries({sortBy:'lum',sortReverse:false,noiseType:'mono',sliceAngle:0,sliceHeight:6,sliceShift:12,sliceChroma:0,scanAngle:0,scanSpacing:2,scanThick:1,
+      blockEnabled:false,blockMode:'mixed',blockSize:32,blockDensity:20,blockShift:6,waveEnabled:false,waveShape:'sine',waveAmp:24,waveLen:160,waveAngle:0,waveTurb:25,
+      cropAspect:'free',cropL:0,cropT:0,cropR:0,cropB:0}).forEach(([id, v]) => {
+      const el = document.getElementById(id); if (el.type === 'checkbox') el.checked = v; else el.value = v;
+    });
+    if (state.baseImg) applyCrop();
+    masterSelect.value = 'none';
+    state.masterOverride = 'none';
+    masterColorControls.classList.add('hidden');
+    state.secondImg = null;
+
+    document.querySelectorAll('.scope-toggle').forEach(pill => {
+      const buttons = pill.querySelectorAll('button');
+      buttons.forEach(b => b.classList.remove('active'));
+      buttons[0].classList.add('active');
+      state.tools[pill.dataset.tool].mode = 'global';
+    });
+    document.querySelectorAll('.tool-color-fields').forEach(f => f.classList.add('hidden'));
+
+    cancelEyedropper();
+    updateTextureControlVisibility();
+    updateLabels();
+    renderPipeline();
+  });
+
+  function updateLabels() {
+    state.masterTolerance = parseInt(document.getElementById('masterTolerance').value, 10);
+    state.tools.sort.tol = parseInt(document.getElementById('sortTolerance').value, 10);
+    state.tools.chroma.tol = parseInt(document.getElementById('chromaTolerance').value, 10);
+    state.tools.random.tol = parseInt(document.getElementById('randomTolerance').value, 10);
+
+    document.getElementById('masterToleranceVal').textContent = document.getElementById('masterTolerance').value;
+    document.querySelectorAll('.tool-mask-container').forEach(c => {
+      const tool = c.id.replace('MaskWrapper', '');
+      const valLabel = c.querySelector(`#${tool}ToleranceVal`);
+      const rangeEl = c.querySelector(`#${tool}Tolerance`);
+      if(valLabel && rangeEl) valLabel.textContent = rangeEl.value;
+    });
+
+    document.getElementById('sortThresholdVal').textContent = document.getElementById('sortThreshold').value;
+    document.getElementById('sortLengthVal').textContent = document.getElementById('sortLength').value + 'px';
+    document.getElementById('aberrationVal').textContent = document.getElementById('aberrationAmount').value + 'px';
+    document.getElementById('aberrationAngleVal').textContent = document.getElementById('aberrationAngle').value + '°';
+    document.getElementById('redOffsetVal').textContent = `${document.getElementById('redX').value}, ${document.getElementById('redY').value}`;
+    document.getElementById('greenOffsetVal').textContent = `${document.getElementById('greenX').value}, ${document.getElementById('greenY').value}`;
+    document.getElementById('blueOffsetVal').textContent = `${document.getElementById('blueX').value}, ${document.getElementById('blueY').value}`;
+    document.getElementById('scatterVal').textContent = document.getElementById('pixelScatter').value + '%';
+    document.getElementById('scatterRadiusVal').textContent = document.getElementById('scatterRadius').value + 'px';
+    document.getElementById('noiseVal').textContent = document.getElementById('pixelNoise').value;
+    document.getElementById('sliceVal').textContent = document.getElementById('sliceAmount').value;
+    document.getElementById('scanlineVal').textContent = document.getElementById('scanlineIntensity').value + '%';
+    document.getElementById('textureScaleVal').textContent = `${parseInt(document.getElementById('textureScale').value, 10).toFixed(1)}×`;
+    document.getElementById('textureStrengthVal').textContent = document.getElementById('textureStrength').value + '%';
+    document.getElementById('textureThresholdVal').textContent = document.getElementById('textureThreshold').value + '%';
+    document.getElementById('textureStackHeightVal').textContent = document.getElementById('textureStackHeight').value + 'px';
+    document.getElementById('dreamStrengthVal').textContent = document.getElementById('dreamStrength').value + '%';
+    document.getElementById('dreamScaleVal').textContent = document.getElementById('dreamScale').value + 'px';
+    document.getElementById('dreamIterationsVal').textContent = document.getElementById('dreamIterations').value;
+    document.getElementById('dreamZoomVal').textContent = (parseInt(document.getElementById('dreamZoom').value, 10) / 10).toFixed(1) + '%';
+    document.getElementById('retroPixelSizeVal').textContent = document.getElementById('retroPixelSize').value + 'px';
+    document.getElementById('retroColorCountVal').textContent = document.getElementById('retroColorCount').value;
+    document.getElementById('retroStrengthVal').textContent = document.getElementById('retroStrength').value + '%';
+    document.getElementById('vhsStrengthVal').textContent = document.getElementById('vhsStrength').value + '%';
+    document.getElementById('vhsDropoutVal').textContent = document.getElementById('vhsDropout').value + '%';
+    document.getElementById('vhsColorLossVal').textContent = document.getElementById('vhsColorLoss').value + '%';
+    document.getElementById('vhsBandsVal').textContent = document.getElementById('vhsBands').value;
+    document.getElementById('doubleOpacityVal').textContent = document.getElementById('doubleOpacity').value + '%';
+    document.getElementById('textSizeVal').textContent = document.getElementById('textSize').value + 'px';
+    document.getElementById('textXVal').textContent = document.getElementById('textX').value + '%';
+    document.getElementById('textYVal').textContent = document.getElementById('textY').value + '%';
+    [['sliceHeight','%'],['sliceShift','%'],['sliceAngle','°'],['sliceChroma','%'],['scanAngle','°'],['scanSpacing','px'],['scanThick','px'],
+     ['blockSize','px'],['blockDensity','%'],['blockShift',''],['waveAmp','px'],['waveLen','px'],['waveAngle','°'],['waveTurb','%'],
+     ['cropL','%'],['cropT','%'],['cropR','%'],['cropB','%']].forEach(([id, s]) => {
+      const v = document.getElementById(id + 'Val'); if (v) v.textContent = document.getElementById(id).value + s;
+    });
+  }
+
+  let renderPending = false;
+  document.querySelectorAll('#sidebar input, #sidebar select').forEach(el => {
+    el.addEventListener('input', () => {
+      updateLabels();
+      if (!renderPending) {
+        renderPending = true;
+        requestAnimationFrame(() => { renderPipeline(); renderPending = false; });
+      }
+    });
+  });
+
+  // RENDERING PIPELINE ENGINE
+  function renderPipeline() {
+    if (!state.baseImg) return;
+
+    const w = canvas.width;
+    const h = canvas.height;
+    const rand = mulberry32(state.seed);
+
+    const baseData = srcCtx.getImageData(0, 0, w, h);
+    const src = baseData.data;
+    const outData = ctx.createImageData(w, h);
+    const dst = outData.data;
+    dst.set(src);
+
+    // 1. PIXEL SORTING MODULATED COLOR TARGETING
+    if (document.getElementById('sortEnabled').checked) {
+      const dir = document.getElementById('sortDirection').value;
+      const thresh = parseInt(document.getElementById('sortThreshold').value, 10);
+      const maxLen = parseInt(document.getElementById('sortLength').value, 10);
+      const sortBy = document.getElementById('sortBy').value;
+      const sortRev = document.getElementById('sortReverse').checked;
+      const sortKey = (r, g, b, l) => {
+        if (sortBy === 'lum') return l;
+        if (sortBy === 'red') return r; if (sortBy === 'green') return g; if (sortBy === 'blue') return b;
+        const mx = Math.max(r, g, b), mn = Math.min(r, g, b), d = mx - mn;
+        if (sortBy === 'sat') return mx ? d / mx * 255 : 0;
+        if (!d) return 0;
+        const hh = mx === r ? ((g - b) / d + 6) % 6 : mx === g ? (b - r) / d + 2 : (r - g) / d + 4;
+        return hh / 6 * 255;
+      };
+
+      if (dir === 'horizontal') {
+        for (let y = 0; y < h; y++) {
+          let x = 0;
+          while (x < w) {
+            const idx = (y * w + x) * 4;
+            const lum = 0.299 * dst[idx] + 0.587 * dst[idx + 1] + 0.114 * dst[idx + 2];
+            const match = evaluatePixelSelection('sort', dst[idx], dst[idx + 1], dst[idx + 2]);
+
+            if (match && lum >= thresh) {
+              let start = x;
+              let span = [];
+              while (x < w && span.length < maxLen) {
+                const cIdx = (y * w + x) * 4;
+                const cLum = 0.299 * dst[cIdx] + 0.587 * dst[cIdx + 1] + 0.114 * dst[cIdx + 2];
+                const cMatch = evaluatePixelSelection('sort', dst[cIdx], dst[cIdx + 1], dst[cIdx + 2]);
+                if (!cMatch || cLum < thresh) break;
+                span.push({ r: dst[cIdx], g: dst[cIdx + 1], b: dst[cIdx + 2], a: dst[cIdx + 3], lum: sortKey(dst[cIdx], dst[cIdx + 1], dst[cIdx + 2], cLum) });
+                x++;
+              }
+              if (span.length > 1) {
+                span.sort((a, b) => sortRev ? b.lum - a.lum : a.lum - b.lum);
+                for (let i = 0; i < span.length; i++) {
+                  const pIdx = (y * w + (start + i)) * 4;
+                  dst[pIdx] = span[i].r; dst[pIdx + 1] = span[i].g; dst[pIdx + 2] = span[i].b; dst[pIdx + 3] = span[i].a;
+                }
+              }
+            } else { x++; }
+          }
+        }
+      } else {
+        for (let x = 0; x < w; x++) {
+          let y = 0;
+          while (y < h) {
+            const idx = (y * w + x) * 4;
+            const lum = 0.299 * dst[idx] + 0.587 * dst[idx + 1] + 0.114 * dst[idx + 2];
+            const match = evaluatePixelSelection('sort', dst[idx], dst[idx + 1], dst[idx + 2]);
+
+            if (match && lum >= thresh) {
+              let start = y;
+              let span = [];
+              while (y < h && span.length < maxLen) {
+                const cIdx = (y * w + x) * 4;
+                const cLum = 0.299 * dst[cIdx] + 0.587 * dst[cIdx + 1] + 0.114 * dst[cIdx + 2];
+                const cMatch = evaluatePixelSelection('sort', dst[cIdx], dst[cIdx + 1], dst[cIdx + 2]);
+                if (!cMatch || cLum < thresh) break;
+                span.push({ r: dst[cIdx], g: dst[cIdx + 1], b: dst[cIdx + 2], a: dst[cIdx + 3], lum: sortKey(dst[cIdx], dst[cIdx + 1], dst[cIdx + 2], cLum) });
+                y++;
+              }
+              if (span.length > 1) {
+                span.sort((a, b) => sortRev ? b.lum - a.lum : a.lum - b.lum);
+                for (let i = 0; i < span.length; i++) {
+                  const pIdx = ((start + i) * w + x) * 4;
+                  dst[pIdx] = span[i].r; dst[pIdx + 1] = span[i].g; dst[pIdx + 2] = span[i].b; dst[pIdx + 3] = span[i].a;
+                }
+              }
+            } else { y++; }
+          }
+        }
+      }
+    }
+
+    // 2. CHROMATIC ABERRATION & RGB CHANNEL SHIFTS
+    const abAmt = parseInt(document.getElementById('aberrationAmount').value, 10);
+    const abAng = parseInt(document.getElementById('aberrationAngle').value, 10) * (Math.PI / 180);
+    const abX = Math.round(Math.cos(abAng) * abAmt);
+    const abY = Math.round(Math.sin(abAng) * abAmt);
+
+    const rOffX = parseInt(document.getElementById('redX').value, 10) + abX;
+    const rOffY = parseInt(document.getElementById('redY').value, 10) + abY;
+    const gOffX = parseInt(document.getElementById('greenX').value, 10);
+    const gOffY = parseInt(document.getElementById('greenY').value, 10);
+    const bOffX = parseInt(document.getElementById('blueX').value, 10) - abX;
+    const bOffY = parseInt(document.getElementById('blueY').value, 10) - abY;
+
+    if (rOffX !== 0 || rOffY !== 0 || gOffX !== 0 || gOffY !== 0 || bOffX !== 0 || bOffY !== 0) {
+      const snap = new Uint8ClampedArray(dst);
+      for (let y = 0; y < h; y++) {
+        for (let x = 0; x < w; x++) {
+          const idx = (y * w + x) * 4;
+          if (!evaluatePixelSelection('chroma', snap[idx], snap[idx + 1], snap[idx + 2])) continue;
+
+          const rx = Math.min(w - 1, Math.max(0, x + rOffX));
+          const ry = Math.min(h - 1, Math.max(0, y + rOffY));
+          const gx = Math.min(w - 1, Math.max(0, x + gOffX));
+          const gy = Math.min(h - 1, Math.max(0, y + gOffY));
+          const bx = Math.min(w - 1, Math.max(0, x + bOffX));
+          const by = Math.min(h - 1, Math.max(0, y + bOffY));
+
+          dst[idx] = snap[(ry * w + rx) * 4];
+          dst[idx + 1] = snap[(gy * w + gx) * 4 + 1];
+          dst[idx + 2] = snap[(by * w + bx) * 4 + 2];
+        }
+      }
+    }
+
+    // 3. PIXEL SCATTER, GRAIN & NOISE
+    const scatterPct = parseInt(document.getElementById('pixelScatter').value, 10) / 100;
+    const scatterRad = parseInt(document.getElementById('scatterRadius').value, 10);
+    const noiseAmt = parseInt(document.getElementById('pixelNoise').value, 10);
+    const noiseColor = document.getElementById('noiseType').value === 'color';
+
+    if (scatterPct > 0 || noiseAmt > 0) {
+      const snap = new Uint8ClampedArray(dst);
+      for (let y = 0; y < h; y++) {
+        for (let x = 0; x < w; x++) {
+          const idx = (y * w + x) * 4;
+          if (!evaluatePixelSelection('random', snap[idx], snap[idx + 1], snap[idx + 2])) continue;
+
+          if (scatterPct > 0 && rand() < scatterPct) {
+            const sx = Math.min(w - 1, Math.max(0, x + Math.round((rand() * 2 - 1) * scatterRad)));
+            const sy = Math.min(h - 1, Math.max(0, y + Math.round((rand() * 2 - 1) * scatterRad)));
+            const sIdx = (sy * w + sx) * 4;
+            dst[idx] = snap[sIdx]; dst[idx + 1] = snap[sIdx + 1]; dst[idx + 2] = snap[sIdx + 2];
+          }
+
+          if (noiseAmt > 0) {
+            const n = (rand() * 2 - 1) * noiseAmt;
+            dst[idx] = Math.min(255, Math.max(0, dst[idx] + n));
+            dst[idx + 1] = Math.min(255, Math.max(0, dst[idx + 1] + (noiseColor ? (rand() * 2 - 1) * noiseAmt : n)));
+            dst[idx + 2] = Math.min(255, Math.max(0, dst[idx + 2] + (noiseColor ? (rand() * 2 - 1) * noiseAmt : n)));
+          }
+        }
+      }
+    }
+
+    const $v = id => parseInt(document.getElementById(id).value, 10);
+
+    // 4. SLICE TEAR — rotatable bands, variable height/shift, optional per-slice RGB split
+    const slices = $v('sliceAmount');
+    if (slices > 0) {
+      const snap = new Uint8ClampedArray(dst);
+      const ang = $v('sliceAngle') * Math.PI / 180;
+      const dx = Math.cos(ang), dy = Math.sin(ang), nx = -dy, ny = dx;
+      const span = Math.abs(w * nx) + Math.abs(h * ny);        // extent across the bands
+      const travel = Math.abs(w * dx) + Math.abs(h * dy);      // extent along the tear
+      const bins = Math.ceil(span) + 2;
+      const shiftMap = new Float32Array(bins), chromaMap = new Float32Array(bins), used = new Uint8Array(bins);
+      const maxH = $v('sliceHeight') / 100, maxS = $v('sliceShift') / 100, split = $v('sliceChroma') / 100;
+      for (let s = 0; s < slices; s++) {
+        const start = Math.floor(rand() * bins);
+        const thick = Math.max(2, Math.floor(rand() * span * maxH));
+        const shift = (rand() * 2 - 1) * travel * maxS;
+        for (let k = start; k < Math.min(bins, start + thick); k++) { shiftMap[k] = shift; chromaMap[k] = shift * split * 0.35; used[k] = 1; }
+      }
+      const wx = v => ((Math.round(v) % w) + w) % w, wy = v => ((Math.round(v) % h) + h) % h;
+      for (let y = 0; y < h; y++) {
+        for (let x = 0; x < w; x++) {
+          const k = Math.round((x - w / 2) * nx + (y - h / 2) * ny + span / 2);
+          if (k < 0 || k >= bins || !used[k]) continue;
+          const idx = (y * w + x) * 4;
+          if (!evaluatePixelSelection('random', snap[idx], snap[idx + 1], snap[idx + 2])) continue;
+          const s = shiftMap[k], c = chromaMap[k];
+          dst[idx]     = snap[(wy(y + dy * (s + c)) * w + wx(x + dx * (s + c))) * 4];
+          dst[idx + 1] = snap[(wy(y + dy * s) * w + wx(x + dx * s)) * 4 + 1];
+          dst[idx + 2] = snap[(wy(y + dy * (s - c)) * w + wx(x + dx * (s - c))) * 4 + 2];
+        }
+      }
+    }
+
+    // 4b. BLOCK CORRUPTION (datamosh-style macroblock damage)
+    if (document.getElementById('blockEnabled').checked) {
+      const snap = new Uint8ClampedArray(dst);
+      const bs = $v('blockSize'), dens = $v('blockDensity') / 100, reach = $v('blockShift');
+      const mode = document.getElementById('blockMode').value;
+      for (let by = 0; by < h; by += bs) {
+        for (let bx = 0; bx < w; bx += bs) {
+          if (rand() > dens) continue;
+          let m = mode;
+          const pick = rand();
+          if (m === 'mixed') m = pick < 0.4 ? 'shift' : pick < 0.75 ? 'smear' : 'crush';
+          const ox = Math.round((rand() * 2 - 1) * reach) * bs, oy = Math.round((rand() * 2 - 1) * reach * 0.5) * bs;
+          const horiz = rand() < 0.5, levels = 2 + Math.floor(rand() * 4), step = 255 / (levels - 1);
+          const x1 = Math.min(w, bx + bs), y1 = Math.min(h, by + bs);
+          for (let y = by; y < y1; y++) {
+            for (let x = bx; x < x1; x++) {
+              const idx = (y * w + x) * 4;
+              if (!evaluatePixelSelection('random', snap[idx], snap[idx + 1], snap[idx + 2])) continue;
+              if (m === 'crush') {
+                dst[idx] = Math.round(snap[idx] / step) * step;
+                dst[idx + 1] = Math.round(snap[idx + 1] / step) * step;
+                dst[idx + 2] = Math.round(snap[idx + 2] / step) * step;
+              } else {
+                const sx = m === 'shift' ? x + ox : (horiz ? Math.max(0, bx - 1) : x);
+                const sy = m === 'shift' ? y + oy : (horiz ? y : Math.max(0, by - 1));
+                const s = (Math.min(h - 1, Math.max(0, sy)) * w + Math.min(w - 1, Math.max(0, sx))) * 4;
+                dst[idx] = snap[s]; dst[idx + 1] = snap[s + 1]; dst[idx + 2] = snap[s + 2];
+              }
+            }
+          }
+        }
+      }
+    }
+
+    // 4c. WAVE WARP (sine / stepped / radial ripple displacement)
+    if (document.getElementById('waveEnabled').checked && $v('waveAmp') > 0) {
+      const snap = new Uint8ClampedArray(dst);
+      const amp = $v('waveAmp'), len = $v('waveLen'), turb = $v('waveTurb') / 100;
+      const shape = document.getElementById('waveShape').value;
+      const ang = $v('waveAngle') * Math.PI / 180, dx = Math.cos(ang), dy = Math.sin(ang), nx = -dy, ny = dx;
+      const phase = (state.seed % 1000) * 0.01, norm = 1 / (1 + 0.8 * turb), TAU = Math.PI * 2;
+      const hash = n => { const s = Math.sin(n * 127.1 + state.seed * 0.013) * 43758.5453; return s - Math.floor(s); };
+      const wave = p => (Math.sin(p) + turb * 0.5 * Math.sin(p * 2.7 + 1.3) + turb * 0.3 * Math.sin(p * 6.1 + phase)) * norm;
+      for (let y = 0; y < h; y++) {
+        for (let x = 0; x < w; x++) {
+          const rx = x - w / 2, ry = y - h / 2;
+          let sx, sy;
+          if (shape === 'ripple') {
+            const r = Math.hypot(rx, ry) || 1, o = wave(r / len * TAU + phase) * amp;
+            sx = x + rx / r * o; sy = y + ry / r * o;
+          } else {
+            const u = rx * nx + ry * ny;
+            const o = (shape === 'stepped' ? (hash(Math.floor(u / (len * 0.25))) * 2 - 1) : wave(u / len * TAU + phase)) * amp;
+            sx = x + dx * o; sy = y + dy * o;
+          }
+          const idx = (y * w + x) * 4;
+          if (!evaluatePixelSelection('random', snap[idx], snap[idx + 1], snap[idx + 2])) continue;
+          const s = (Math.min(h - 1, Math.max(0, Math.round(sy))) * w + Math.min(w - 1, Math.max(0, Math.round(sx)))) * 4;
+          dst[idx] = snap[s]; dst[idx + 1] = snap[s + 1]; dst[idx + 2] = snap[s + 2];
+        }
+      }
+    }
+
+    // 5. CRT SCANLINES — rotatable, adjustable spacing & thickness, anti-aliased
+    const scanlinePct = $v('scanlineIntensity') / 100;
+    if (scanlinePct > 0) {
+      const sa = $v('scanAngle') * Math.PI / 180, snx = -Math.sin(sa), sny = Math.cos(sa);
+      const S = $v('scanSpacing'), T = Math.min($v('scanThick'), S);
+      for (let y = 0; y < h; y++) {
+        for (let x = 0; x < w; x++) {
+          let p = (x * snx + y * sny) % S; if (p < 0) p += S;
+          const cov = Math.max(Math.min(1, Math.max(0, T - p)), Math.min(1, Math.max(0, 1 - (S - p))));
+          if (cov < 0.01) continue;
+          const idx = (y * w + x) * 4;
+          if (!evaluatePixelSelection('random', dst[idx], dst[idx + 1], dst[idx + 2])) continue;
+          const f = 1 - scanlinePct * cov;
+          dst[idx] *= f; dst[idx + 1] *= f; dst[idx + 2] *= f;
+        }
+      }
+    }
+
+    // 6. PROCEDURAL FRACTAL TEXTURE DISTORTION
+    const textureStrength = parseInt(document.getElementById('textureStrength').value, 10) / 100;
+    const textureMode = document.getElementById('textureMode').value;
+    if (textureStrength > 0) {
+      const field = getTextureField(w, h);
+      const xMap = new Uint16Array(w);
+      const yMap = new Uint16Array(h);
+      for (let x = 0; x < w; x++) xMap[x] = Math.min(field.width - 1, Math.floor(x * field.width / w));
+      for (let y = 0; y < h; y++) yMap[y] = Math.min(field.height - 1, Math.floor(y * field.height / h));
+      const threshold = parseInt(document.getElementById('textureThreshold').value, 10) / 100;
+
+      if (textureMode === 'blend') {
+        const blendMode = document.getElementById('textureBlendMode').value;
+        for (let y = 0; y < h; y++) {
+          for (let x = 0; x < w; x++) {
+            const idx = (y * w + x) * 4;
+            const texture = field.values[yMap[y] * field.width + xMap[x]] * 255;
+            for (let channel = 0; channel < 3; channel++) {
+              const mixed = blendTextureChannel(dst[idx + channel], texture, blendMode);
+              dst[idx + channel] += (mixed - dst[idx + channel]) * textureStrength;
+            }
+          }
+        }
+      } else if (textureMode === 'randomize') {
+        const snap = new Uint8ClampedArray(dst);
+        for (let y = 0; y < h; y++) {
+          for (let x = 0; x < w; x++) {
+            const idx = (y * w + x) * 4;
+            const texture = field.values[yMap[y] * field.width + xMap[x]];
+            if (texture < 1 - threshold || !evaluatePixelSelection('random', snap[idx], snap[idx + 1], snap[idx + 2])) continue;
+            const amount = textureStrength * texture;
+            for (let channel = 0; channel < 3; channel++) {
+              dst[idx + channel] = snap[idx + channel] +
+                (rand() * 255 - snap[idx + channel]) * amount;
+            }
+          }
+        }
+      } else {
+        const snap = new Uint8ClampedArray(dst);
+        const stackHeight = parseInt(document.getElementById('textureStackHeight').value, 10);
+        for (let y = 0; y < h; y++) {
+          for (let x = 0; x < w; x++) {
+            const idx = (y * w + x) * 4;
+            const texture = field.values[yMap[y] * field.width + xMap[x]];
+            if (Math.abs(texture - 0.5) > threshold ||
+                !evaluatePixelSelection('random', snap[idx], snap[idx + 1], snap[idx + 2])) continue;
+            for (let offset = 1; offset <= stackHeight && y - offset >= 0; offset++) {
+              const targetIdx = ((y - offset) * w + x) * 4;
+              for (let channel = 0; channel < 4; channel++) {
+                dst[targetIdx + channel] = snap[idx + channel];
+              }
+            }
+          }
+        }
+      }
+    }
+
+    // 7. RECURSIVE AI-STYLE HALLUCINATION
+    // Every pass samples a slightly zoomed-in version of the previous pass.
+    // The feedback is then locally enhanced, so small structures accumulate
+    // and grow over successive passes instead of being sinusoidally displaced.
+    const dreamStrength = parseInt(document.getElementById('dreamStrength').value, 10) / 100;
+    if (dreamStrength > 0) {
+      const original = new Uint8ClampedArray(dst);
+      let working = new Uint8ClampedArray(dst);
+      const iterations = parseInt(document.getElementById('dreamIterations').value, 10);
+      const zoomPerPass = parseInt(document.getElementById('dreamZoom').value, 10) / 1000;
+      const detailScale = parseInt(document.getElementById('dreamScale').value, 10);
+      const feedbackMode = document.getElementById('dreamStyle').value === 'feedback';
+      const cx = (w - 1) * 0.5;
+      const cy = (h - 1) * 0.5;
+
+      const sampleBilinear = (data, x, y, channel) => {
+        x = Math.max(0, Math.min(w - 1.001, x));
+        y = Math.max(0, Math.min(h - 1.001, y));
+        const x0 = Math.floor(x), y0 = Math.floor(y);
+        const x1 = Math.min(w - 1, x0 + 1), y1 = Math.min(h - 1, y0 + 1);
+        const fx = x - x0, fy = y - y0;
+        const a = data[(y0 * w + x0) * 4 + channel];
+        const b = data[(y0 * w + x1) * 4 + channel];
+        const c = data[(y1 * w + x0) * 4 + channel];
+        const d = data[(y1 * w + x1) * 4 + channel];
+        return (a * (1 - fx) + b * fx) * (1 - fy) +
+               (c * (1 - fx) + d * fx) * fy;
+      };
+
+      for (let pass = 0; pass < iterations; pass++) {
+        const next = new Uint8ClampedArray(working.length);
+        const zoom = 1 - zoomPerPass * (0.55 + dreamStrength * 0.9);
+        const passMix = feedbackMode ? 0.78 : 0.90;
+        const featureGain = (0.10 + dreamStrength * 0.48) / Math.sqrt(iterations);
+        const phase = (state.seed % 997) * 0.013 + pass * 1.71;
+
+        for (let y = 0; y < h; y++) {
+          for (let x = 0; x < w; x++) {
+            const idx = (y * w + x) * 4;
+            // Recursive inward movement, with tiny seeded drift to prevent a sterile zoom.
+            const driftX = Math.sin((y / Math.max(1, detailScale)) + phase) * detailScale * dreamStrength * 0.10;
+            const driftY = Math.cos((x / Math.max(1, detailScale)) - phase) * detailScale * dreamStrength * 0.10;
+            const sx = cx + (x - cx) * zoom + driftX;
+            const sy = cy + (y - cy) * zoom + driftY;
+
+            for (let ch = 0; ch < 3; ch++) {
+              const center = sampleBilinear(working, sx, sy, ch);
+              // Local neighborhood average acts as a simple feature/edge detector.
+              const radius = Math.max(1, Math.min(4, Math.round(detailScale / 4)));
+              const left = sampleBilinear(working, sx - radius, sy, ch);
+              const right = sampleBilinear(working, sx + radius, sy, ch);
+              const up = sampleBilinear(working, sx, sy - radius, ch);
+              const down = sampleBilinear(working, sx, sy + radius, ch);
+              const localMean = (left + right + up + down) * 0.25;
+              const feature = center - localMean;
+              const amplified = center + feature * featureGain * (feedbackMode ? 2.0 : 1.25);
+              const sourceValue = original[idx + ch];
+              const recursiveValue = sourceValue * (1 - passMix) + amplified * passMix;
+              next[idx + ch] = Math.max(0, Math.min(255, recursiveValue));
+            }
+            next[idx + 3] = original[idx + 3];
+          }
+        }
+        working = next;
+      }
+
+      for (let i = 0; i < dst.length; i += 4) {
+        for (let ch = 0; ch < 3; ch++) {
+          dst[i + ch] = original[i + ch] +
+            (working[i + ch] - original[i + ch]) * dreamStrength;
+        }
+      }
+    }
+
+    // 8. STANDALONE RETRO PIXELATOR & PALETTE QUANTIZER
+    // This is deliberately a pure block-pixel + palette operation: no warp or wobble.
+    if (document.getElementById('retroEnabled').checked) {
+      const pixelSize = parseInt(document.getElementById('retroPixelSize').value, 10);
+      const colorCount = parseInt(document.getElementById('retroColorCount').value, 10);
+      const strength = parseInt(document.getElementById('retroStrength').value, 10) / 100;
+      const paletteName = document.getElementById('retroPalette').value;
+      const palettes = {
+        gameboy: [[15,56,15],[48,98,48],[139,172,15],[155,188,15]],
+        pico8: [[0,0,0],[29,43,83],[126,37,83],[0,135,81],[171,82,54],[95,87,79],[194,195,199],[255,241,232],[255,0,77],[255,163,0],[255,236,39],[0,228,54],[41,173,255],[131,118,156],[255,119,168],[255,204,170]],
+        dawnbringer: [[20,12,28],[68,36,52],[48,52,109],[78,74,78],[133,76,48],[52,101,36],[208,70,72],[117,113,97],[89,125,206],[210,125,44],[133,149,161],[109,170,44],[210,170,153],[109,194,202],[218,212,94],[222,238,214]],
+        cga: [[0,0,0],[0,0,170],[0,170,0],[0,170,170],[170,0,0],[170,0,170],[170,85,0],[170,170,170],[85,85,85],[85,85,255],[85,255,85],[85,255,255],[255,85,85],[255,85,255],[255,255,85],[255,255,255]],
+        vaporwave: [[18,12,44],[43,25,91],[89,42,130],[156,54,139],[219,75,147],[255,129,170],[255,190,190],[70,210,210],[110,130,255],[245,220,255]],
+        amiga: [[0,0,0],[34,32,52],[69,40,60],[102,57,49],[143,86,59],[223,113,38],[217,160,102],[238,195,154],[50,60,57],[63,104,71],[104,138,129],[181,189,104],[148,176,194],[117,129,168],[86,108,134],[255,255,255]],
+        mono: [[0,0,0],[255,255,255]]
+      };
+      // Correct a palette entry kept as a named RGB triplet.
+      palettes.amiga[10] = [104,138,129];
+      let palette = palettes[paletteName] || palettes.pico8;
+      if (paletteName === 'custom') {
+        // Build a compact image-derived palette using deterministic k-means.
+        const samples = [];
+        const stride = Math.max(1, Math.floor((w * h) / 2500));
+        for (let p = 0; p < w * h; p += stride) {
+          const i = p * 4;
+          samples.push([dst[i], dst[i + 1], dst[i + 2]]);
+        }
+        palette = [];
+        for (let k = 0; k < colorCount; k++) {
+          const sample = samples[Math.floor(k * (samples.length - 1) / Math.max(1, colorCount - 1))] || [0, 0, 0];
+          palette.push(sample.slice());
+        }
+        for (let iteration = 0; iteration < 5; iteration++) {
+          const sums = palette.map(() => [0, 0, 0, 0]);
+          for (const sample of samples) {
+            let nearest = 0, bestDistance = Infinity;
+            for (let k = 0; k < palette.length; k++) {
+              const dr = sample[0] - palette[k][0], dg = sample[1] - palette[k][1], db = sample[2] - palette[k][2];
+              const distance = dr * dr + dg * dg + db * db;
+              if (distance < bestDistance) { bestDistance = distance; nearest = k; }
+            }
+            sums[nearest][0] += sample[0]; sums[nearest][1] += sample[1]; sums[nearest][2] += sample[2]; sums[nearest][3]++;
+          }
+          for (let k = 0; k < palette.length; k++) {
+            if (sums[k][3]) palette[k] = [sums[k][0] / sums[k][3], sums[k][1] / sums[k][3], sums[k][2] / sums[k][3]];
+          }
+        }
+      }
+      const reduced = [];
+      for (let i = 0; i < colorCount; i++) {
+        const pick = Math.round(i * (palette.length - 1) / Math.max(1, colorCount - 1));
+        if (!reduced.some(c => c === palette[pick])) reduced.push(palette[pick]);
+      }
+      const snap = new Uint8ClampedArray(dst);
+      for (let by = 0; by < h; by += pixelSize) {
+        for (let bx = 0; bx < w; bx += pixelSize) {
+          let rr = 0, gg = 0, bb = 0, samples = 0;
+          const yEnd = Math.min(h, by + pixelSize), xEnd = Math.min(w, bx + pixelSize);
+          for (let yy = by; yy < yEnd; yy += Math.max(1, Math.floor(pixelSize / 3))) {
+            for (let xx = bx; xx < xEnd; xx += Math.max(1, Math.floor(pixelSize / 3))) {
+              const p = (yy * w + xx) * 4;
+              rr += snap[p]; gg += snap[p + 1]; bb += snap[p + 2]; samples++;
+            }
+          }
+          rr /= samples; gg /= samples; bb /= samples;
+          let nearest = reduced[0], best = Infinity;
+          for (const c of reduced) {
+            const dr = rr - c[0], dg = gg - c[1], db = bb - c[2];
+            const distance = dr * dr * 0.30 + dg * dg * 0.59 + db * db * 0.11;
+            if (distance < best) { best = distance; nearest = c; }
+          }
+          for (let yy = by; yy < yEnd; yy++) {
+            for (let xx = bx; xx < xEnd; xx++) {
+              const p = (yy * w + xx) * 4;
+              dst[p] = snap[p] + (nearest[0] - snap[p]) * strength;
+              dst[p + 1] = snap[p + 1] + (nearest[1] - snap[p + 1]) * strength;
+              dst[p + 2] = snap[p + 2] + (nearest[2] - snap[p + 2]) * strength;
+            }
+          }
+        }
+      }
+    }
+
+    // 9. VHS ROT — waveform tracking damage, chroma loss, and signal dropouts.
+    if (document.getElementById('vhsEnabled').checked) {
+      const rot = parseInt(document.getElementById('vhsStrength').value, 10) / 100;
+      const dropout = parseInt(document.getElementById('vhsDropout').value, 10) / 100;
+      const colorLoss = parseInt(document.getElementById('vhsColorLoss').value, 10) / 100;
+      const bandCount = parseInt(document.getElementById('vhsBands').value, 10);
+      const snap = new Uint8ClampedArray(dst);
+      const waveform = new Float32Array(h);
+      const phase = (state.seed % 10007) * 0.001;
+      const peaks = [];
+      for (let i = 0; i < Math.max(4, Math.floor(bandCount / 3)); i++) {
+        peaks.push({
+          y: Math.floor(rand() * h),
+          width: Math.max(2, Math.floor(h * (0.003 + rand() * 0.025))),
+          amplitude: (rand() * 2 - 1) * (0.25 + rand() * 0.75)
+        });
+      }
+      // Smooth multi-frequency signal plus sharp peaks and valleys, like a scope trace.
+      for (let y = 0; y < h; y++) {
+        let wave = Math.sin(y * 0.037 + phase) * 0.30 +
+                   Math.sin(y * 0.113 + phase * 1.7) * 0.22 +
+                   Math.sin(y * 0.009 - phase) * 0.34;
+        for (const peak of peaks) {
+          const d = Math.abs(y - peak.y);
+          if (d < peak.width) wave += peak.amplitude * (1 - d / peak.width);
+        }
+        waveform[y] = Math.max(-1, Math.min(1, wave));
+      }
+
+      const maxShift = Math.max(1, Math.round(w * 0.045 * rot));
+      for (let y = 0; y < h; y++) {
+        const bandWave = waveform[y];
+        const shift = Math.round(bandWave * maxShift);
+        const bandGate = Math.sin(y * (bandCount / Math.max(1, h)) * Math.PI * 2 + phase);
+        const damagedBand = Math.abs(bandGate) > (0.72 - rot * 0.28);
+        for (let x = 0; x < w; x++) {
+          const idx = (y * w + x) * 4;
+          const sourceX = Math.max(0, Math.min(w - 1, x + shift));
+          const sIdx = (y * w + sourceX) * 4;
+          if (damagedBand && rot > 0) {
+            const desat = colorLoss * rot * (0.25 + Math.abs(bandWave) * 0.75);
+            const lum = snap[sIdx] * 0.299 + snap[sIdx + 1] * 0.587 + snap[sIdx + 2] * 0.114;
+            dst[idx] = snap[sIdx] * (1 - desat) + lum * desat;
+            dst[idx + 1] = snap[sIdx + 1] * (1 - desat) + lum * desat;
+            dst[idx + 2] = snap[sIdx + 2] * (1 - desat) + lum * desat;
+          } else {
+            dst[idx] = snap[sIdx]; dst[idx + 1] = snap[sIdx + 1]; dst[idx + 2] = snap[sIdx + 2];
+          }
+          dst[idx + 3] = snap[sIdx + 3];
+        }
+      }
+
+      // Short horizontal signal losses with ragged edges and intermittent color bars.
+      const dropoutCount = Math.floor(bandCount * (0.25 + dropout * 1.8) * rot);
+      for (let d = 0; d < dropoutCount; d++) {
+        const y0 = Math.floor(rand() * h);
+        const bandH = Math.max(1, Math.floor(1 + rand() * (h * 0.012 * (1 + dropout * 3))));
+        const x0 = Math.floor(rand() * w * 0.8);
+        const bandW = Math.max(2, Math.floor(w * (0.08 + rand() * 0.55)));
+        const mode = rand();
+        for (let y = y0; y < Math.min(h, y0 + bandH); y++) {
+          const taper = Math.sin(((y - y0 + 1) / (bandH + 1)) * Math.PI);
+          for (let x = x0; x < Math.min(w, x0 + bandW); x++) {
+            const idx = (y * w + x) * 4;
+            if (rand() > dropout * (0.45 + taper * 0.55)) continue;
+            if (mode < 0.42) {
+              dst[idx] *= 0.08; dst[idx + 1] *= 0.08; dst[idx + 2] *= 0.08;
+            } else if (mode < 0.72) {
+              const staticValue = rand() < 0.5 ? 0 : 255;
+              dst[idx] = staticValue; dst[idx + 1] = staticValue; dst[idx + 2] = staticValue;
+            } else {
+              dst[idx] = Math.min(255, dst[idx] * 0.25 + 150);
+              dst[idx + 1] *= 0.25;
+              dst[idx + 2] = Math.min(255, dst[idx + 2] * 0.25 + 180);
+            }
+          }
+        }
+      }
+    }
+
+    ctx.putImageData(outData, 0, 0);
+
+    // 8. DOUBLE EXPOSURE
+    if (state.secondImg) {
+      const sImg = state.secondImg;
+      const scale = Math.max(w / sImg.naturalWidth, h / sImg.naturalHeight);
+      const drawW = sImg.naturalWidth * scale;
+      const drawH = sImg.naturalHeight * scale;
+      const offsetX = (w - drawW) / 2;
+      const offsetY = (h - drawH) / 2;
+
+      ctx.save();
+      ctx.globalCompositeOperation = document.getElementById('doubleBlendMode').value;
+      ctx.globalAlpha = parseInt(document.getElementById('doubleOpacity').value, 10) / 100;
+      ctx.drawImage(sImg, offsetX, offsetY, drawW, drawH);
+      ctx.restore();
+    }
+
+    // 9. TEXT GLITCH LAYER
+    const text = document.getElementById('textContent').value;
+    if (text.trim().length > 0) {
+      const font = document.getElementById('textFont').value;
+      const size = parseInt(document.getElementById('textSize').value, 10);
+      const color = document.getElementById('textColor').value;
+      const tx = (parseInt(document.getElementById('textX').value, 10) / 100) * w;
+      const ty = (parseInt(document.getElementById('textY').value, 10) / 100) * h;
+      const glitchText = document.getElementById('textGlitch').checked;
+
+      ctx.save();
+      ctx.font = `bold ${size}px ${font}`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+
+      if (glitchText) {
+        const shift = Math.max(3, Math.round(size * 0.06));
+        ctx.fillStyle = 'rgba(255, 0, 85, 0.85)'; ctx.fillText(text, tx - shift, ty);
+        ctx.fillStyle = 'rgba(0, 240, 255, 0.85)'; ctx.fillText(text, tx + shift, ty);
+      }
+
+      ctx.fillStyle = color;
+      ctx.fillText(text, tx, ty);
+      ctx.restore();
+    }
+  }
+
+  function exportImage(format) {
+    if (!state.baseImg) return;
+    const mime = format === 'jpg' ? 'image/jpeg' : 'image/png';
+    const dataURL = canvas.toDataURL(mime, 0.96);
+    const link = document.createElement('a');
+    link.download = `GlitchRip_${Date.now()}.${format}`;
+    link.href = dataURL;
+    link.click();
+  }
+
+  function exportPDF() {
+    if (!state.baseImg) return;
+    const w = canvas.width;
+    const h = canvas.height;
+    const jpegDataUrl = canvas.toDataURL('image/jpeg', 0.95);
+    const base64 = jpegDataUrl.split(',')[1];
+    const raw = atob(base64);
+    const imgBytes = new Uint8Array(raw.length);
+    for (let i = 0; i < raw.length; i++) imgBytes[i] = raw.charCodeAt(i);
+
+    const enc = new TextEncoder();
+    const parts = [];
+    const offsets = [];
+    let byteLen = 0;
+
+    function pushStr(str) { const bytes = enc.encode(str); parts.push(bytes); byteLen += bytes.length; }
+    function pushBytes(bytes) { parts.push(bytes); byteLen += bytes.length; }
+
+    pushStr("%PDF-1.4\n");
+    offsets.push(byteLen); pushStr("1 0 obj\n<< /Type /Catalog /Pages 2 0 R >>\nendobj\n");
+    offsets.push(byteLen); pushStr("2 0 obj\n<< /Type /Pages /Kids [3 0 R] /Count 1 >>\nendobj\n");
+    offsets.push(byteLen); pushStr(`3 0 obj\n<< /Type /Page /Parent 2 0 R /Resources << /XObject << /Im0 4 0 R >> >> /MediaBox [0 0 ${w} ${h}] /Contents 5 0 R >>\nendobj\n`);
+    offsets.push(byteLen); pushStr(`4 0 obj\n<< /Type /XObject /Subtype /Image /Width ${w} /Height ${h} /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length ${imgBytes.length} >>\nstream\n`);
+    pushBytes(imgBytes); pushStr("\nendstream\nendobj\n");
+    const contentStream = `q ${w} 0 0 ${h} 0 0 cm /Im0 Do Q`;
+    offsets.push(byteLen); pushStr(`5 0 obj\n<< /Length ${contentStream.length} >>\nstream\n${contentStream}\nendstream\nendobj\n`);
+    const xrefStart = byteLen; pushStr(`xref\n0 ${offsets.length}\n0000000000 65535 f \n`);
+    for (let i = 1; i < offsets.length; i++) pushStr(String(offsets[i]).padStart(10, '0') + " 00000 n \n");
+    pushStr(`trailer\n<< /Size ${offsets.length} /Root 1 0 R >>\nstartxref\n${xrefStart}\n%%EOF`);
+
+    const blob = new Blob(parts, { type: 'application/pdf' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.download = `GlitchRip_${Date.now()}.pdf`;
+    link.href = url;
+    link.click();
+    setTimeout(() => URL.revokeObjectURL(url), 5000);
+  }
+</script>
+</body>
+</html>
