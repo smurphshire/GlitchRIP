@@ -491,7 +491,7 @@
   <aside id="sidebar">
     <div class="brand-header">
       <span class="brand-title">GlitchRip</span>
-      <span class="brand-tag">v3.0</span>
+      <span class="brand-tag">v3.1</span>
     </div>
 
     <div class="panel-scroll">
@@ -549,7 +549,7 @@
 
       <!-- 2. PIXEL SORTING -->
       <details class="effect-group" data-stage="sort">
-        <summary><span>Pixel Sorting</span><span class="sw"><input type="checkbox" class="stage-toggle" id="sortEnabled"></span></summary>
+        <summary><span>Pixel Sort & Stack FX</span><span class="sw"><input type="checkbox" class="stage-toggle" id="sortEnabled"></span></summary>
         <div class="group-body">
           <div class="control-row">
             <div class="control-header"><span>Effect Mix</span><span class="control-val" id="mix_sortVal">100%</span></div>
@@ -611,9 +611,9 @@
         </div>
       </details>
 
-      <!-- 3. CHROMATIC ABERRATION & CHANNELS -->
+      <!-- 3. CHROMATIC CHANNELS ABERRATION -->
       <details class="effect-group" data-stage="chroma">
-        <summary><span>Chromatic & RGB Channels</span><span class="sw"><input type="checkbox" class="stage-toggle" id="en_chroma" checked></span></summary>
+        <summary><span>Chromatic Aberration FX</span><span class="sw"><input type="checkbox" class="stage-toggle" id="en_chroma" checked></span></summary>
         <div class="group-body">
           <div class="control-row">
             <div class="control-header"><span>Effect Mix</span><span class="control-val" id="mix_chromaVal">100%</span></div>
@@ -686,9 +686,9 @@
         </div>
       </details>
 
-      <!-- 4. RANDOMIZE & SLICE TEAR -->
+      <!-- 4. SLICE TEAR -->
       <details class="effect-group" data-stage="random">
-        <summary><span>Randomize & Slice Tear</span><span class="sw"><input type="checkbox" class="stage-toggle" id="en_random" checked></span></summary>
+        <summary><span>Slice, Tear, & Noise FX</span><span class="sw"><input type="checkbox" class="stage-toggle" id="en_random" checked></span></summary>
         <div class="group-body">
           <div class="control-row">
             <div class="control-header"><span>Effect Mix</span><span class="control-val" id="mix_randomVal">100%</span></div>
@@ -766,7 +766,7 @@
 
       <!-- 5. TEXTURE DISTORTION -->
       <details class="effect-group" data-stage="texture">
-        <summary><span>Fractal Texture Distortion</span><span class="sw"><input type="checkbox" class="stage-toggle" id="en_texture" checked></span></summary>
+        <summary><span>Texture Overlay FX</span><span class="sw"><input type="checkbox" class="stage-toggle" id="en_texture" checked></span></summary>
         <div class="group-body">
           <div class="control-row">
             <div class="control-header"><span>Effect Mix</span><span class="control-val" id="mix_textureVal">100%</span></div>
@@ -835,7 +835,7 @@
 
       <!-- 6. RECURSIVE AI-STYLE HALLUCINATION -->
       <details class="effect-group" data-stage="dream">
-        <summary><span>AI Hallucinator · Recursive Dream</span><span class="sw"><input type="checkbox" class="stage-toggle" id="en_dream" checked></span></summary>
+        <summary><span>Recursive Dream FX</span><span class="sw"><input type="checkbox" class="stage-toggle" id="en_dream" checked></span></summary>
         <div class="group-body">
           <div class="control-row">
             <div class="control-header"><span>Effect Mix</span><span class="control-val" id="mix_dreamVal">100%</span></div>
@@ -882,7 +882,7 @@
 
       <!-- 7. STANDALONE RETRO PIXELATOR & PALETTE QUANTIZER -->
       <details class="effect-group" data-stage="retro">
-        <summary><span>Retro Pixelator & Palettizer</span><span class="sw"><input type="checkbox" class="stage-toggle" id="retroEnabled"></span></summary>
+        <summary><span>Pixelator & Palettizer FX</span><span class="sw"><input type="checkbox" class="stage-toggle" id="retroEnabled"></span></summary>
         <div class="group-body">
           <div class="control-row">
             <div class="control-header"><span>Effect Mix</span><span class="control-val" id="mix_retroVal">100%</span></div>
@@ -928,7 +928,7 @@
 
       <!-- 8. VHS TAPE ROT -->
       <details class="effect-group" data-stage="vhs">
-        <summary><span>VHS Rot · Tape Damage</span><span class="sw"><input type="checkbox" class="stage-toggle" id="vhsEnabled"></span></summary>
+        <summary><span>VHS Tape Damage FX</span><span class="sw"><input type="checkbox" class="stage-toggle" id="vhsEnabled"></span></summary>
         <div class="group-body">
           <div class="control-row">
             <div class="control-header"><span>Effect Mix</span><span class="control-val" id="mix_vhsVal">100%</span></div>
@@ -968,7 +968,7 @@
 
       <!-- BLOCK CORRUPT -->
       <details class="effect-group" data-stage="block">
-        <summary><span>Block Corruption · Datamosh</span><span class="sw"><input type="checkbox" class="stage-toggle" id="blockEnabled"></span></summary>
+        <summary><span>Block Datamosh FX</span><span class="sw"><input type="checkbox" class="stage-toggle" id="blockEnabled"></span></summary>
         <div class="group-body">
           <div class="control-row">
             <div class="control-header"><span>Effect Mix</span><span class="control-val" id="mix_blockVal">100%</span></div>
@@ -995,7 +995,7 @@
 
       <!-- WAVE WARP -->
       <details class="effect-group" data-stage="wave">
-        <summary><span>Wave Warp · Signal Bend</span><span class="sw"><input type="checkbox" class="stage-toggle" id="waveEnabled"></span></summary>
+        <summary><span>Warp Distortion FX</span><span class="sw"><input type="checkbox" class="stage-toggle" id="waveEnabled"></span></summary>
         <div class="group-body">
           <div class="control-row">
             <div class="control-header"><span>Effect Mix</span><span class="control-val" id="mix_waveVal">100%</span></div>
@@ -1025,7 +1025,7 @@
       </details>
 
       <details class="effect-group" data-stage="scan">
-        <summary><span>Scanlines · CRT</span><span class="sw"><input type="checkbox" class="stage-toggle" id="en_scan" checked></span></summary>
+        <summary><span>CRT Scanlines FX</span><span class="sw"><input type="checkbox" class="stage-toggle" id="en_scan" checked></span></summary>
         <div class="group-body">
           <div class="control-row">
             <div class="control-header"><span>Effect Mix</span><span class="control-val" id="mix_scanVal">100%</span></div>
@@ -1056,7 +1056,7 @@
       </details>
 
       <details class="effect-group" data-stage="jpeg">
-        <summary><span>JPEG Corruption</span><span class="sw"><input type="checkbox" class="stage-toggle" id="en_jpeg"></span></summary>
+        <summary><span>JPEG Corruption FX</span><span class="sw"><input type="checkbox" class="stage-toggle" id="en_jpeg"></span></summary>
         <div class="group-body">
           <div class="control-row">
             <div class="control-header"><span>Effect Mix</span><span class="control-val" id="mix_jpegVal">100%</span></div>
@@ -1074,7 +1074,7 @@
       </details>
 
       <details class="effect-group" data-stage="interlace">
-        <summary><span>Interlace · Field Shift</span><span class="sw"><input type="checkbox" class="stage-toggle" id="en_interlace"></span></summary>
+        <summary><span>Interlace Blur FX</span><span class="sw"><input type="checkbox" class="stage-toggle" id="en_interlace"></span></summary>
         <div class="group-body">
           <div class="control-row">
             <div class="control-header"><span>Effect Mix</span><span class="control-val" id="mix_interlaceVal">100%</span></div>
@@ -1096,7 +1096,7 @@
       </details>
 
       <details class="effect-group" data-stage="dither">
-        <summary><span>Dither & Halftone</span><span class="sw"><input type="checkbox" class="stage-toggle" id="en_dither"></span></summary>
+        <summary><span>Dither & Halftone FX</span><span class="sw"><input type="checkbox" class="stage-toggle" id="en_dither"></span></summary>
         <div class="group-body">
           <div class="control-row">
             <div class="control-header"><span>Effect Mix</span><span class="control-val" id="mix_ditherVal">100%</span></div>
@@ -1120,7 +1120,7 @@
       </details>
 
       <details class="effect-group" data-stage="edge">
-        <summary><span>Edge Glow</span><span class="sw"><input type="checkbox" class="stage-toggle" id="en_edge"></span></summary>
+        <summary><span>Edge Glow FX</span><span class="sw"><input type="checkbox" class="stage-toggle" id="en_edge"></span></summary>
         <div class="group-body">
           <div class="control-row">
             <div class="control-header"><span>Effect Mix</span><span class="control-val" id="mix_edgeVal">100%</span></div>
@@ -1144,7 +1144,7 @@
       </details>
 
       <details class="effect-group" data-stage="ghost">
-        <summary><span>Ghost Trails</span><span class="sw"><input type="checkbox" class="stage-toggle" id="en_ghost"></span></summary>
+        <summary><span>Ghost Trails FX</span><span class="sw"><input type="checkbox" class="stage-toggle" id="en_ghost"></span></summary>
         <div class="group-body">
           <div class="control-row">
             <div class="control-header"><span>Effect Mix</span><span class="control-val" id="mix_ghostVal">100%</span></div>
@@ -1335,7 +1335,7 @@
     <div id="canvas-container">
       <div id="empty-state">
         <h2>GLITCHRIP STUDIO</h2>
-        <p>Upload an image from the left panel or drop a file anywhere here to start corrupting pixels.</p>
+        <p>Upload an image to start corrupting pixels</p>
         <button class="btn btn-primary" onclick="document.getElementById('baseImageInput').click()">Select Image</button>
       </div>
       <canvas id="mainCanvas" class="hidden"></canvas>
