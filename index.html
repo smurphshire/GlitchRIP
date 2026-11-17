@@ -449,6 +449,40 @@
   #topbar{background:var(--bg-dark)}
   #empty-state{background:transparent;border-color:var(--border)}
   #empty-state h2{color:var(--accent);letter-spacing:3px}
+
+  /* ===== v3 ===== */
+  .sw{margin-left:auto;margin-right:10px;display:inline-flex;cursor:pointer}
+  .sw input{-webkit-appearance:none;appearance:none;width:28px;height:16px;border-radius:8px;background:var(--border);position:relative;cursor:pointer;margin:0;transition:background .15s}
+  .sw input::after{content:"";position:absolute;top:3px;left:3px;width:10px;height:10px;border-radius:50%;background:#8a928d;transition:left .15s,background .15s}
+  .sw input:checked{background:rgba(45,255,136,.25)}
+  .sw input:checked::after{left:15px;background:var(--accent)}
+  details.effect-group.off .group-body>*:not(:first-child){opacity:.38}
+  details.effect-group.off summary>span:first-child{color:var(--text-muted)}
+  #topbar{gap:8px;flex-wrap:nowrap}
+  .tb-group{display:flex;align-items:center;gap:6px}
+  #topbar .btn{padding:6px 10px}
+  #topbar select,#seedInput{width:auto;background:var(--bg-card);border:1px solid var(--border);color:var(--text-main);padding:6px 8px;border-radius:6px;font-size:12px;outline:none}
+  #seedInput{width:78px;font-family:monospace}
+  #zoomLabel{font-family:monospace;font-size:11px;color:var(--text-muted);min-width:38px;text-align:center}
+  .btn:disabled{opacity:.35;pointer-events:none}
+  .btn.hold-on{border-color:var(--accent);color:var(--accent)}
+  @media (max-width:1100px){.status-info{display:none}}
+  canvas#mainCanvas{max-width:none;max-height:none;transform-origin:center;will-change:transform}
+  #canvas-container.pannable{cursor:grab}
+  #cropOverlay{position:absolute;inset:0;pointer-events:none;z-index:5}
+  .cbox{position:absolute;border:1px solid var(--accent);box-shadow:0 0 0 9999px rgba(0,0,0,.58);pointer-events:auto;cursor:move;
+    background-image:linear-gradient(rgba(45,255,136,.25),rgba(45,255,136,.25)),linear-gradient(rgba(45,255,136,.25),rgba(45,255,136,.25)),linear-gradient(rgba(45,255,136,.25),rgba(45,255,136,.25)),linear-gradient(rgba(45,255,136,.25),rgba(45,255,136,.25));
+    background-size:1px 100%,1px 100%,100% 1px,100% 1px;background-position:33.3% 0,66.6% 0,0 33.3%,0 66.6%;background-repeat:no-repeat}
+  .cbox .h{position:absolute;width:11px;height:11px;background:var(--accent);border-radius:2px;margin:-6px 0 0 -6px}
+  .h[data-h=nw]{left:0;top:0;cursor:nwse-resize}.h[data-h=n]{left:50%;top:0;cursor:ns-resize}.h[data-h=ne]{left:100%;top:0;cursor:nesw-resize}
+  .h[data-h=e]{left:100%;top:50%;cursor:ew-resize}.h[data-h=se]{left:100%;top:100%;cursor:nwse-resize}.h[data-h=s]{left:50%;top:100%;cursor:ns-resize}
+  .h[data-h=sw]{left:0;top:100%;cursor:nesw-resize}.h[data-h=w]{left:0;top:50%;cursor:ew-resize}
+  .srow{display:flex;align-items:center;gap:8px;padding:6px 2px;border-bottom:1px solid var(--border);font-size:12px}
+  .srow .nm{flex:1;cursor:pointer;color:var(--text-muted)}.srow .nm:hover{color:var(--text-main)}
+  .srow .dot{width:7px;height:7px;border-radius:50%;background:var(--border)}.srow .dot.on{background:var(--accent)}
+  .srow .mv{background:none;border:1px solid var(--border);color:var(--text-muted);border-radius:4px;width:24px;height:22px;cursor:pointer;font-size:9px}
+  .srow .mv:hover:not(:disabled){border-color:var(--accent);color:var(--accent)}.srow .mv:disabled{opacity:.25;cursor:default}
+  .btn-grid-4{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:6px}
 </style>
 </head>
 <body>
@@ -457,14 +491,14 @@
   <aside id="sidebar">
     <div class="brand-header">
       <span class="brand-title">GlitchRip</span>
-      <span class="brand-tag">v2.0</span>
+      <span class="brand-tag">v3.0</span>
     </div>
 
     <div class="panel-scroll">
 
       <!-- 1. SOURCE & GLOBAL OVERRIDE -->
       <details class="effect-group" open>
-        <summary>Source & Mask Override</summary>
+        <summary>Source & Master Override</summary>
         <div class="group-body">
           <input type="file" id="baseImageInput" accept="image/*,.heic,.heif,.hif,.avif,.webp,.gif,.bmp,.tif,.tiff,.jfif,.jpe,.svg,.ico,.apng" class="hidden">
           <div class="btn-grid">
@@ -497,14 +531,30 @@
         </div>
       </details>
 
-      <!-- 2. PIXEL SORTING -->
-      <details class="effect-group">
-        <summary>Pixel Sort & Stack</summary>
+      <details class="effect-group" id="stackPanel">
+        <summary>Effect Order</summary>
+        <div class="group-body"><div id="stackList"></div></div>
+      </details>
+
+      <details class="effect-group" open id="presetPanel">
+        <summary>Presets & Randomize</summary>
         <div class="group-body">
-          <label class="checkbox-row">
-            <span>Enable Pixel Sort</span>
-            <input type="checkbox" id="sortEnabled">
-          </label>
+          <button class="btn btn-primary" id="randomBtn">Randomize Look</button>
+          <div class="control-row"><div class="control-header"><span>Presets</span></div><select id="presetSelect" data-nosave></select></div>
+          <div class="btn-grid"><button class="btn" id="presetLoadBtn">Load</button><button class="btn btn-danger" id="presetDelBtn">Delete</button></div>
+          <input type="text" id="presetName" data-nosave placeholder="Name this look…">
+          <button class="btn" id="presetSaveBtn">Save Current as Preset</button>
+        </div>
+      </details>
+
+      <!-- 2. PIXEL SORTING -->
+      <details class="effect-group" data-stage="sort">
+        <summary><span>Pixel Sorting</span><span class="sw"><input type="checkbox" class="stage-toggle" id="sortEnabled"></span></summary>
+        <div class="group-body">
+          <div class="control-row">
+            <div class="control-header"><span>Effect Mix</span><span class="control-val" id="mix_sortVal">100%</span></div>
+            <input type="range" id="mix_sort" min="0" max="100" value="100">
+          </div>
           <div class="control-row">
             <div class="control-header"><span>Direction</span></div>
             <select id="sortDirection">
@@ -525,6 +575,14 @@
               <span class="control-val" id="sortLengthVal">120px</span>
             </div>
             <input type="range" id="sortLength" min="10" max="600" value="120">
+          </div>
+          <div class="control-row">
+            <div class="control-header"><span>Sort Angle Offset</span><span class="control-val" id="sortAngleVal">0°</span></div>
+            <input type="range" id="sortAngle" min="-90" max="90" value="0">
+          </div>
+          <div class="control-row">
+            <div class="control-header"><span>Max Brightness</span><span class="control-val" id="sortMaxVal">255</span></div>
+            <input type="range" id="sortMax" min="0" max="255" value="255">
           </div>
           <div class="control-row">
             <div class="control-header"><span>Sort By</span></div>
@@ -554,9 +612,13 @@
       </details>
 
       <!-- 3. CHROMATIC ABERRATION & CHANNELS -->
-      <details class="effect-group">
-        <summary>Chromatic Aberration FX</summary>
+      <details class="effect-group" data-stage="chroma">
+        <summary><span>Chromatic & RGB Channels</span><span class="sw"><input type="checkbox" class="stage-toggle" id="en_chroma" checked></span></summary>
         <div class="group-body">
+          <div class="control-row">
+            <div class="control-header"><span>Effect Mix</span><span class="control-val" id="mix_chromaVal">100%</span></div>
+            <input type="range" id="mix_chroma" min="0" max="100" value="100">
+          </div>
           <div class="control-row">
             <div class="control-header">
               <span>Chromatic Aberration</span>
@@ -625,9 +687,13 @@
       </details>
 
       <!-- 4. RANDOMIZE & SLICE TEAR -->
-      <details class="effect-group">
-        <summary>Slice Tear Randomizer</summary>
+      <details class="effect-group" data-stage="random">
+        <summary><span>Randomize & Slice Tear</span><span class="sw"><input type="checkbox" class="stage-toggle" id="en_random" checked></span></summary>
         <div class="group-body">
+          <div class="control-row">
+            <div class="control-header"><span>Effect Mix</span><span class="control-val" id="mix_randomVal">100%</span></div>
+            <input type="range" id="mix_random" min="0" max="100" value="100">
+          </div>
           <div class="control-row">
             <div class="control-header">
               <span>Pixel Scatter (Displacement)</span>
@@ -676,25 +742,6 @@
             <div class="control-header"><span>Tear RGB Split</span><span class="control-val" id="sliceChromaVal">0%</span></div>
             <input type="range" id="sliceChroma" min="0" max="100" value="0">
           </div>
-          <div class="control-row">
-            <div class="control-header">
-              <span>Scanlines · Intensity</span>
-              <span class="control-val" id="scanlineVal">0%</span>
-            </div>
-            <input type="range" id="scanlineIntensity" min="0" max="90" value="0">
-          </div>
-          <div class="control-row">
-            <div class="control-header"><span>Scanline Angle</span><span class="control-val" id="scanAngleVal">0°</span></div>
-            <input type="range" id="scanAngle" min="-90" max="90" value="0">
-          </div>
-          <div class="control-row">
-            <div class="control-header"><span>Line Spacing</span><span class="control-val" id="scanSpacingVal">2px</span></div>
-            <input type="range" id="scanSpacing" min="2" max="24" value="2">
-          </div>
-          <div class="control-row">
-            <div class="control-header"><span>Line Thickness</span><span class="control-val" id="scanThickVal">1px</span></div>
-            <input type="range" id="scanThick" min="1" max="12" value="1">
-          </div>
 
           <!-- Tool Isolation Mask Block -->
           <div class="tool-mask-container" id="randomMaskWrapper">
@@ -718,9 +765,13 @@
       </details>
 
       <!-- 5. TEXTURE DISTORTION -->
-      <details class="effect-group">
-        <summary>Texture Fractal FX</summary>
+      <details class="effect-group" data-stage="texture">
+        <summary><span>Fractal Texture Distortion</span><span class="sw"><input type="checkbox" class="stage-toggle" id="en_texture" checked></span></summary>
         <div class="group-body">
+          <div class="control-row">
+            <div class="control-header"><span>Effect Mix</span><span class="control-val" id="mix_textureVal">100%</span></div>
+            <input type="range" id="mix_texture" min="0" max="100" value="100">
+          </div>
           <p class="offline-note">Procedural textures are generated locally in your browser.</p>
           <div class="control-row">
             <div class="control-header"><span>Fractal Pattern</span></div>
@@ -783,9 +834,13 @@
       </details>
 
       <!-- 6. RECURSIVE AI-STYLE HALLUCINATION -->
-      <details class="effect-group">
-        <summary>Recursive Dream FX</summary>
+      <details class="effect-group" data-stage="dream">
+        <summary><span>AI Hallucinator · Recursive Dream</span><span class="sw"><input type="checkbox" class="stage-toggle" id="en_dream" checked></span></summary>
         <div class="group-body">
+          <div class="control-row">
+            <div class="control-header"><span>Effect Mix</span><span class="control-val" id="mix_dreamVal">100%</span></div>
+            <input type="range" id="mix_dream" min="0" max="100" value="100">
+          </div>
           <p class="offline-note">A local, multi-pass feedback effect. Each pass zooms into the previous pass, feeds the result back through the image, and amplifies emerging edges and patterns. It is procedural—not a connected AI model.</p>
           <div class="control-row">
             <div class="control-header"><span>Dream Behaviour</span></div>
@@ -826,14 +881,14 @@
       </details>
 
       <!-- 7. STANDALONE RETRO PIXELATOR & PALETTE QUANTIZER -->
-      <details class="effect-group">
-        <summary>Pixelator & Palettizer</summary>
+      <details class="effect-group" data-stage="retro">
+        <summary><span>Retro Pixelator & Palettizer</span><span class="sw"><input type="checkbox" class="stage-toggle" id="retroEnabled"></span></summary>
         <div class="group-body">
+          <div class="control-row">
+            <div class="control-header"><span>Effect Mix</span><span class="control-val" id="mix_retroVal">100%</span></div>
+            <input type="range" id="mix_retro" min="0" max="100" value="100">
+          </div>
           <p class="offline-note">Independent pixel-art conversion. This panel does not warp, wobble, or distort the image.</p>
-          <label class="checkbox-row">
-            <span>Enable Retro Pixelator</span>
-            <input type="checkbox" id="retroEnabled">
-          </label>
           <div class="control-row">
             <div class="control-header"><span>Color Palette</span></div>
             <select id="retroPalette">
@@ -872,14 +927,14 @@
       </details>
 
       <!-- 8. VHS TAPE ROT -->
-      <details class="effect-group">
-        <summary>VHS Damage FX</summary>
+      <details class="effect-group" data-stage="vhs">
+        <summary><span>VHS Rot · Tape Damage</span><span class="sw"><input type="checkbox" class="stage-toggle" id="vhsEnabled"></span></summary>
         <div class="group-body">
+          <div class="control-row">
+            <div class="control-header"><span>Effect Mix</span><span class="control-val" id="mix_vhsVal">100%</span></div>
+            <input type="range" id="mix_vhs" min="0" max="100" value="100">
+          </div>
           <p class="offline-note">Simulates deteriorating magnetic tape: uneven horizontal tracking, waveform-like displacement, color dropout, and damaged signal bands.</p>
-          <label class="checkbox-row">
-            <span>Enable VHS fx</span>
-            <input type="checkbox" id="vhsEnabled">
-          </label>
           <div class="control-row">
             <div class="control-header">
               <span>Rot / Tracking Damage</span>
@@ -912,10 +967,13 @@
       </details>
 
       <!-- BLOCK CORRUPT -->
-      <details class="effect-group">
-        <summary>Block Datamosh FX</summary>
+      <details class="effect-group" data-stage="block">
+        <summary><span>Block Corruption · Datamosh</span><span class="sw"><input type="checkbox" class="stage-toggle" id="blockEnabled"></span></summary>
         <div class="group-body">
-          <label class="checkbox-row"><span>Enable Block Corruption</span><input type="checkbox" id="blockEnabled"></label>
+          <div class="control-row">
+            <div class="control-header"><span>Effect Mix</span><span class="control-val" id="mix_blockVal">100%</span></div>
+            <input type="range" id="mix_block" min="0" max="100" value="100">
+          </div>
           <div class="control-row">
             <div class="control-header"><span>Corruption Style</span></div>
             <select id="blockMode"><option value="mixed">Mixed</option><option value="shift">Displace Blocks</option><option value="smear">Smear Blocks</option><option value="crush">Color Crush</option></select>
@@ -936,10 +994,13 @@
       </details>
 
       <!-- WAVE WARP -->
-      <details class="effect-group">
-        <summary>Warp Distort FX</summary>
+      <details class="effect-group" data-stage="wave">
+        <summary><span>Wave Warp · Signal Bend</span><span class="sw"><input type="checkbox" class="stage-toggle" id="waveEnabled"></span></summary>
         <div class="group-body">
-          <label class="checkbox-row"><span>Enable Wave Warp</span><input type="checkbox" id="waveEnabled"></label>
+          <div class="control-row">
+            <div class="control-header"><span>Effect Mix</span><span class="control-val" id="mix_waveVal">100%</span></div>
+            <input type="range" id="mix_wave" min="0" max="100" value="100">
+          </div>
           <div class="control-row">
             <div class="control-header"><span>Wave Shape</span></div>
             <select id="waveShape"><option value="sine">Sine</option><option value="stepped">Stepped Bands</option><option value="ripple">Radial Ripple</option></select>
@@ -963,9 +1024,158 @@
         </div>
       </details>
 
+      <details class="effect-group" data-stage="scan">
+        <summary><span>Scanlines · CRT</span><span class="sw"><input type="checkbox" class="stage-toggle" id="en_scan" checked></span></summary>
+        <div class="group-body">
+          <div class="control-row">
+            <div class="control-header"><span>Effect Mix</span><span class="control-val" id="mix_scanVal">100%</span></div>
+            <input type="range" id="mix_scan" min="0" max="100" value="100">
+          </div>
+          <div class="control-row">
+            <div class="control-header">
+              <span>Intensity</span>
+              <span class="control-val" id="scanlineVal">0%</span>
+            </div>
+            <input type="range" id="scanlineIntensity" min="0" max="90" value="0">
+          </div>
+          <div class="control-row">
+            <div class="control-header"><span>Scanline Angle</span><span class="control-val" id="scanAngleVal">0°</span></div>
+            <input type="range" id="scanAngle" min="-90" max="90" value="0">
+          </div>
+          <div class="control-row">
+            <div class="control-header"><span>Line Spacing</span><span class="control-val" id="scanSpacingVal">2px</span></div>
+            <input type="range" id="scanSpacing" min="2" max="24" value="2">
+          </div>
+          <div class="control-row">
+            <div class="control-header"><span>Line Thickness</span><span class="control-val" id="scanThickVal">1px</span></div>
+            <input type="range" id="scanThick" min="1" max="12" value="1">
+          </div>
+
+
+        </div>
+      </details>
+
+      <details class="effect-group" data-stage="jpeg">
+        <summary><span>JPEG Corruption</span><span class="sw"><input type="checkbox" class="stage-toggle" id="en_jpeg"></span></summary>
+        <div class="group-body">
+          <div class="control-row">
+            <div class="control-header"><span>Effect Mix</span><span class="control-val" id="mix_jpegVal">100%</span></div>
+            <input type="range" id="mix_jpeg" min="0" max="100" value="100">
+          </div>
+          <div class="control-row">
+            <div class="control-header"><span>Quality (lower = blockier)</span><span class="control-val" id="jpegQualityVal">12</span></div>
+            <input type="range" id="jpegQuality" min="1" max="60" value="12">
+          </div>
+          <div class="control-row">
+            <div class="control-header"><span>Corrupted Blocks</span><span class="control-val" id="jpegCorruptVal">8%</span></div>
+            <input type="range" id="jpegCorrupt" min="0" max="100" value="8">
+          </div>
+        </div>
+      </details>
+
+      <details class="effect-group" data-stage="interlace">
+        <summary><span>Interlace · Field Shift</span><span class="sw"><input type="checkbox" class="stage-toggle" id="en_interlace"></span></summary>
+        <div class="group-body">
+          <div class="control-row">
+            <div class="control-header"><span>Effect Mix</span><span class="control-val" id="mix_interlaceVal">100%</span></div>
+            <input type="range" id="mix_interlace" min="0" max="100" value="100">
+          </div>
+          <div class="control-row">
+            <div class="control-header"><span>Field Offset</span><span class="control-val" id="interOffsetVal">10px</span></div>
+            <input type="range" id="interOffset" min="1" max="80" value="10">
+          </div>
+          <div class="control-row">
+            <div class="control-header"><span>Row Jitter</span><span class="control-val" id="interJitterVal">20%</span></div>
+            <input type="range" id="interJitter" min="0" max="100" value="20">
+          </div>
+          <div class="control-row">
+            <div class="control-header"><span>Odd Field Dimming</span><span class="control-val" id="interDimVal">0%</span></div>
+            <input type="range" id="interDim" min="0" max="80" value="0">
+          </div>
+        </div>
+      </details>
+
+      <details class="effect-group" data-stage="dither">
+        <summary><span>Dither & Halftone</span><span class="sw"><input type="checkbox" class="stage-toggle" id="en_dither"></span></summary>
+        <div class="group-body">
+          <div class="control-row">
+            <div class="control-header"><span>Effect Mix</span><span class="control-val" id="mix_ditherVal">100%</span></div>
+            <input type="range" id="mix_dither" min="0" max="100" value="100">
+          </div>
+          <div class="control-row">
+            <div class="control-header"><span>Method</span></div>
+            <select id="ditherMode"><option value="fs">Floyd–Steinberg</option><option value="bayer4">Bayer 4×4</option><option value="bayer8">Bayer 8×8</option><option value="halftone">Halftone Dots</option></select>
+          </div>
+          <div class="control-row">
+            <div class="control-header"><span>Levels per Channel</span><span class="control-val" id="ditherLevelsVal">2</span></div>
+            <input type="range" id="ditherLevels" min="2" max="8" value="2">
+          </div>
+          <div class="control-row">
+            <div class="control-header"><span>Cell Size</span><span class="control-val" id="ditherSizeVal">3px</span></div>
+            <input type="range" id="ditherSize" min="1" max="24" value="3">
+          </div>
+          <label class="checkbox-row"><span>Single-ink mode</span><input type="checkbox" id="ditherMono"></label>
+          <div class="control-row"><div class="control-header"><span>Ink Color</span></div><input type="color" id="ditherInk" value="#2dff88" style="width:100%;height:30px;"></div>
+        </div>
+      </details>
+
+      <details class="effect-group" data-stage="edge">
+        <summary><span>Edge Glow</span><span class="sw"><input type="checkbox" class="stage-toggle" id="en_edge"></span></summary>
+        <div class="group-body">
+          <div class="control-row">
+            <div class="control-header"><span>Effect Mix</span><span class="control-val" id="mix_edgeVal">100%</span></div>
+            <input type="range" id="mix_edge" min="0" max="100" value="100">
+          </div>
+          <div class="control-row">
+            <div class="control-header"><span>Strength</span><span class="control-val" id="edgeStrengthVal">70%</span></div>
+            <input type="range" id="edgeStrength" min="0" max="100" value="70">
+          </div>
+          <div class="control-row">
+            <div class="control-header"><span>Edge Threshold</span><span class="control-val" id="edgeThresholdVal">15%</span></div>
+            <input type="range" id="edgeThreshold" min="0" max="90" value="15">
+          </div>
+          <div class="control-row">
+            <div class="control-header"><span>Glow Radius</span><span class="control-val" id="edgeGlowVal">4px</span></div>
+            <input type="range" id="edgeGlow" min="0" max="20" value="4">
+          </div>
+          <div class="control-row"><div class="control-header"><span>Edge Color</span></div><input type="color" id="edgeColor" value="#2dff88" style="width:100%;height:30px;"></div>
+          <label class="checkbox-row"><span>Edges only (black background)</span><input type="checkbox" id="edgeOnly"></label>
+        </div>
+      </details>
+
+      <details class="effect-group" data-stage="ghost">
+        <summary><span>Ghost Trails</span><span class="sw"><input type="checkbox" class="stage-toggle" id="en_ghost"></span></summary>
+        <div class="group-body">
+          <div class="control-row">
+            <div class="control-header"><span>Effect Mix</span><span class="control-val" id="mix_ghostVal">100%</span></div>
+            <input type="range" id="mix_ghost" min="0" max="100" value="100">
+          </div>
+          <div class="control-row">
+            <div class="control-header"><span>Echoes</span><span class="control-val" id="ghostCountVal">6</span></div>
+            <input type="range" id="ghostCount" min="1" max="14" value="6">
+          </div>
+          <div class="control-row">
+            <div class="control-header"><span>Spacing</span><span class="control-val" id="ghostSpacingVal">24px</span></div>
+            <input type="range" id="ghostSpacing" min="2" max="150" value="24">
+          </div>
+          <div class="control-row">
+            <div class="control-header"><span>Angle</span><span class="control-val" id="ghostAngleVal">0°</span></div>
+            <input type="range" id="ghostAngle" min="0" max="360" value="0">
+          </div>
+          <div class="control-row">
+            <div class="control-header"><span>Fade</span><span class="control-val" id="ghostFadeVal">62%</span></div>
+            <input type="range" id="ghostFade" min="10" max="95" value="62">
+          </div>
+          <div class="control-row">
+            <div class="control-header"><span>Trail Style</span></div>
+            <select id="ghostMode"><option value="lighten">Light trails</option><option value="screen">Glow</option><option value="average">Motion blur</option></select>
+          </div>
+        </div>
+      </details>
+
       <!-- 9. DOUBLE EXPOSURE -->
-      <details class="effect-group">
-        <summary>Double Exposure FX</summary>
+      <details class="effect-group" data-stage="double">
+        <summary><span>Double Exposure</span><span class="sw"><input type="checkbox" class="stage-toggle" id="en_double" checked></span></summary>
         <div class="group-body">
           <input type="file" id="doubleExposureInput" accept="image/*,.heic,.heif,.hif,.avif,.webp,.gif,.bmp,.tif,.tiff,.jfif,.jpe,.svg,.ico,.apng" class="hidden">
           <div class="btn-grid">
@@ -995,8 +1205,8 @@
       </details>
 
       <!-- 8. TEXT OVERLAY -->
-      <details class="effect-group">
-        <summary>Text Overlay Add-on</summary>
+      <details class="effect-group" data-stage="text">
+        <summary><span>Text Overlay</span><span class="sw"><input type="checkbox" class="stage-toggle" id="en_text" checked></span></summary>
         <div class="group-body">
           <div class="control-row">
             <div class="control-header"><span>Text Content</span></div>
@@ -1042,8 +1252,8 @@
       </details>
 
       <!-- CROP -->
-      <details class="effect-group">
-        <summary>Crop Function</summary>
+      <details class="effect-group" data-stage="crop" id="cropPanel">
+        <summary><span>Crop</span><span class="sw"><input type="checkbox" class="stage-toggle" id="en_crop" checked></span></summary>
         <div class="group-body">
           <div class="control-row">
             <div class="control-header"><span>Aspect Preset</span></div>
@@ -1051,20 +1261,21 @@
           </div>
           <div class="control-row">
             <div class="control-header"><span>Trim Left</span><span class="control-val" id="cropLVal">0%</span></div>
-            <input type="range" id="cropL" min="0" max="90" value="0">
+            <input type="range" id="cropL" min="0" max="90" value="0" step="0.1">
           </div>
           <div class="control-row">
             <div class="control-header"><span>Trim Right</span><span class="control-val" id="cropRVal">0%</span></div>
-            <input type="range" id="cropR" min="0" max="90" value="0">
+            <input type="range" id="cropR" min="0" max="90" value="0" step="0.1">
           </div>
           <div class="control-row">
             <div class="control-header"><span>Trim Top</span><span class="control-val" id="cropTVal">0%</span></div>
-            <input type="range" id="cropT" min="0" max="90" value="0">
+            <input type="range" id="cropT" min="0" max="90" value="0" step="0.1">
           </div>
           <div class="control-row">
             <div class="control-header"><span>Trim Bottom</span><span class="control-val" id="cropBVal">0%</span></div>
-            <input type="range" id="cropB" min="0" max="90" value="0">
+            <input type="range" id="cropB" min="0" max="90" value="0" step="0.1">
           </div>
+          <div class="btn-grid-4"><button class="btn" id="rotLBtn" title="Rotate left">⟲</button><button class="btn" id="rotRBtn" title="Rotate right">⟳</button><button class="btn" id="flipHBtn" title="Flip horizontal">⇋</button><button class="btn" id="flipVBtn" title="Flip vertical">⇅</button></div>
           <button class="btn" id="cropResetBtn">Reset Crop</button>
         </div>
       </details>
@@ -1078,6 +1289,24 @@
             <button class="btn btn-primary" onclick="exportImage('jpg')">JPG</button>
             <button class="btn btn-primary" onclick="exportPDF()">PDF</button>
           </div>
+          <div class="control-row">
+            <div class="control-header"><span>Export Scale</span></div>
+            <select id="exportScale" data-nosave><option value="0.5">50%</option><option value="1" selected>100% (source size)</option><option value="2">200% (max 6000px)</option></select>
+          </div>
+          <div class="control-row">
+            <div class="control-header"><span>JPG Quality</span><span class="control-val" id="exportQualityVal">92%</span></div>
+            <input type="range" id="exportQuality" data-nosave min="50" max="100" value="92">
+          </div>
+          <hr style="border:0;border-top:1px solid var(--border);">
+          <div class="control-row">
+            <div class="control-header"><span>Animation Length</span><span class="control-val" id="animDurationVal">3s</span></div>
+            <input type="range" id="animDuration" data-nosave min="1" max="6" value="3">
+          </div>
+          <div class="control-row">
+            <div class="control-header"><span>Frame Rate</span><span class="control-val" id="animFpsVal">12 fps</span></div>
+            <input type="range" id="animFps" data-nosave min="6" max="24" value="12">
+          </div>
+          <button class="btn btn-primary" id="webmBtn">Record Glitch Animation (WebM)</button>
         </div>
       </details>
 
@@ -1086,9 +1315,21 @@
 
   <main id="viewport-wrapper">
     <header id="topbar">
-      <button class="btn" id="toggleSidebarBtn">☰ Panels</button>
+      <div class="tb-group">
+        <button class="btn" id="toggleSidebarBtn">☰</button>
+        <button class="btn" id="undoBtn" title="Undo (Ctrl+Z)" disabled>↶</button>
+        <button class="btn" id="redoBtn" title="Redo (Ctrl+Shift+Z)" disabled>↷</button>
+      </div>
       <div class="status-info" id="resolutionDisplay">NO IMAGE LOADED</div>
-      <button class="btn" id="reseedBtn" title="Randomize glitch seed">↻ Reseed Glitch</button>
+      <div class="tb-group">
+        <button class="btn" id="origBtn" title="Hold to compare with original (or hold O)">Original</button>
+        <select id="previewQ" title="Preview quality (export is always full quality)">
+          <option value="fast">Preview: Fast</option><option value="balanced" selected>Preview: Balanced</option><option value="full">Preview: Full</option>
+        </select>
+        <button class="btn" id="fitBtn">Fit</button><button class="btn" id="zoom1Btn">1:1</button><span id="zoomLabel">100%</span>
+        <input type="number" id="seedInput" value="1337" min="0" max="999999" title="Glitch seed">
+        <button class="btn" id="reseedBtn" title="Randomize glitch seed">↻</button>
+      </div>
     </header>
 
     <div id="canvas-container">
@@ -1098,6 +1339,7 @@
         <button class="btn btn-primary" onclick="document.getElementById('baseImageInput').click()">Select Image</button>
       </div>
       <canvas id="mainCanvas" class="hidden"></canvas>
+      <div id="cropOverlay" class="hidden"><div class="cbox"><i class="h" data-h="nw"></i><i class="h" data-h="n"></i><i class="h" data-h="ne"></i><i class="h" data-h="e"></i><i class="h" data-h="se"></i><i class="h" data-h="s"></i><i class="h" data-h="sw"></i><i class="h" data-h="w"></i></div></div>
     </div>
   </main>
 
@@ -1302,10 +1544,11 @@
 
   // Handle Eyedropper click events on drawing context canvas
   canvas.addEventListener('click', (e) => {
+    if (state.justPanned) { state.justPanned = false; return; }
     if (!state.pickingTarget || !state.baseImg) return;
     const rect = canvas.getBoundingClientRect();
-    const scaleX = canvas.width / rect.width;
-    const scaleY = canvas.height / rect.height;
+    const scaleX = srcCanvas.width / rect.width;
+    const scaleY = srcCanvas.height / rect.height;
     const x = Math.floor((e.clientX - rect.left) * scaleX);
     const y = Math.floor((e.clientY - rect.top) * scaleY);
 
@@ -1323,6 +1566,7 @@
 
     cancelEyedropper();
     renderPipeline();
+    pushHistory();
   });
 
   function hexToRgb(hex) {
@@ -1417,60 +1661,196 @@
     return capSize(img);
   }
 
+  // ===== Source pipeline: orient -> crop -> preview / full =====
+  const $ = id => document.getElementById(id);
+  Object.assign(state, { order: ['sort','chroma','random','block','interlace','wave','jpeg','ghost','edge','texture','dream','retro','dither','scan','vhs'],
+    transform: { rot: 0, fx: false, fy: false }, srcVer: 0, previewQ: 'balanced', cropEditing: false, showOrig: false, suspend: false, justPanned: false });
+  const PREVIEW = { fast: 900, balanced: 1400, full: 99999 };
+  const orientCanvas = document.createElement('canvas');
+  const scaledCv = document.createElement('canvas'), scaledCx = scaledCv.getContext('2d', { willReadFrequently: true });
+  let scaledKey = '', fitK = 1;
+  const zoom = { z: 1, x: 0, y: 0 };
+
+  function buildOriented() {
+    const img = state.baseImg, tr = state.transform, sw = img.naturalWidth, sh = img.naturalHeight, odd = tr.rot % 2;
+    orientCanvas.width = odd ? sh : sw; orientCanvas.height = odd ? sw : sh;
+    const c = orientCanvas.getContext('2d');
+    c.save(); c.translate(orientCanvas.width / 2, orientCanvas.height / 2); c.scale(tr.fx ? -1 : 1, tr.fy ? -1 : 1); c.rotate(tr.rot * Math.PI / 2);
+    c.drawImage(img, -sw / 2, -sh / 2); c.restore();
+    state.orient = true;
+  }
+  function applyCrop() {
+    if (!state.orient) return;
+    const on = $('en_crop').checked, g = id => on ? parseFloat($(id).value) : 0;
+    const iw = orientCanvas.width, ih = orientCanvas.height;
+    const sx = Math.min(iw - 8, Math.round(iw * g('cropL') / 100)), sy = Math.min(ih - 8, Math.round(ih * g('cropT') / 100));
+    const sw = Math.max(8, Math.min(iw - sx, Math.round(iw * (100 - g('cropL') - g('cropR')) / 100)));
+    const sh = Math.max(8, Math.min(ih - sy, Math.round(ih * (100 - g('cropT') - g('cropB')) / 100)));
+    srcCanvas.width = sw; srcCanvas.height = sh;
+    srcCtx.drawImage(orientCanvas, sx, sy, sw, sh, 0, 0, sw, sh);
+    state.srcVer++;
+    $('resolutionDisplay').textContent = `${sw} × ${sh} PX`;
+  }
+  function getSourceData(w, h) {
+    if (w === srcCanvas.width && h === srcCanvas.height) return srcCtx.getImageData(0, 0, w, h);
+    const key = state.srcVer + ':' + w + 'x' + h;
+    if (scaledKey !== key) { scaledCv.width = w; scaledCv.height = h; scaledCx.imageSmoothingQuality = 'high'; scaledCx.drawImage(srcCanvas, 0, 0, w, h); scaledKey = key; }
+    return scaledCx.getImageData(0, 0, w, h);
+  }
+  function previewSize() {
+    const sw = srcCanvas.width, sh = srcCanvas.height;
+    let k = Math.min(1, PREVIEW[state.previewQ] / Math.max(sw, sh));
+    if (zoom.z > 1.5) k = Math.min(1, Math.max(k, fitK * zoom.z * (window.devicePixelRatio || 1)));
+    return [Math.max(1, Math.round(sw * k)), Math.max(1, Math.round(sh * k))];
+  }
+  function renderCropEditor() {
+    const sw = orientCanvas.width, sh = orientCanvas.height, k = Math.min(1, PREVIEW[state.previewQ] / Math.max(sw, sh));
+    const pw = Math.round(sw * k), ph = Math.round(sh * k);
+    if (canvas.width !== pw || canvas.height !== ph) { canvas.width = pw; canvas.height = ph; }
+    ctx.drawImage(orientCanvas, 0, 0, pw, ph);
+    layoutCropOverlay();
+  }
+  function renderPipeline() {
+    if (!state.baseImg || state.suspend) return;
+    if (state.cropEditing) { renderCropEditor(); return; }
+    const [pw, ph] = previewSize();
+    if (canvas.width !== pw || canvas.height !== ph) { canvas.width = pw; canvas.height = ph; }
+    if (state.showOrig) { ctx.putImageData(getSourceData(pw, ph), 0, 0); return; }
+    renderCore(ctx, pw, ph, true);
+  }
+
+  // ----- fit / zoom / pan -----
+  function fitCanvas() {
+    if (!state.baseImg) return;
+    const cont = $('canvas-container'), aw = cont.clientWidth - 56, ah = cont.clientHeight - 56;
+    const sw = state.cropEditing ? orientCanvas.width : srcCanvas.width, sh = state.cropEditing ? orientCanvas.height : srcCanvas.height;
+    fitK = Math.max(0.01, Math.min(aw / sw, ah / sh, 1));
+    canvas.style.width = Math.round(sw * fitK) + 'px'; canvas.style.height = Math.round(sh * fitK) + 'px';
+    applyZoom();
+  }
+  function applyZoom() {
+    canvas.style.transform = `translate(${zoom.x}px, ${zoom.y}px) scale(${zoom.z})`;
+    $('zoomLabel').textContent = Math.round(fitK * zoom.z * 100) + '%';
+    $('canvas-container').classList.toggle('pannable', zoom.z > 1.001);
+    layoutCropOverlay();
+  }
+  let hiTimer = 0, lastHi = false;
+  function setZoom(z, cx, cy) {
+    z = Math.max(0.25, Math.min(16, z));
+    const r = zoomR(), c = { x: cx - (r.left + r.width / 2), y: cy - (r.top + r.height / 2) }, f = z / zoom.z;
+    zoom.x = c.x - f * (c.x - zoom.x); zoom.y = c.y - f * (c.y - zoom.y); zoom.z = z;
+    if (z <= 1.001) { zoom.x = zoom.y = 0; }
+    applyZoom();
+    const hi = z > 1.5; if (hi !== lastHi) { lastHi = hi; clearTimeout(hiTimer); hiTimer = setTimeout(renderPipeline, 120); }
+  }
+  const zoomR = () => $('canvas-container').getBoundingClientRect();
+  $('canvas-container').addEventListener('wheel', (e) => { if (!state.baseImg) return; e.preventDefault(); setZoom(zoom.z * Math.exp(-e.deltaY * 0.0015), e.clientX, e.clientY); }, { passive: false });
+  let pan = null;
+  $('canvas-container').addEventListener('pointerdown', (e) => {
+    if (e.target.closest('#cropOverlay') || zoom.z <= 1.001 || e.button > 1) return;
+    pan = { x: e.clientX, y: e.clientY, ox: zoom.x, oy: zoom.y, moved: false };
+  });
+  window.addEventListener('pointermove', (e) => {
+    if (!pan) return;
+    const dx = e.clientX - pan.x, dy = e.clientY - pan.y;
+    if (Math.abs(dx) + Math.abs(dy) > 4) pan.moved = true;
+    if (pan.moved) { zoom.x = pan.ox + dx; zoom.y = pan.oy + dy; applyZoom(); }
+  });
+  window.addEventListener('pointerup', () => { if (pan && pan.moved) { state.justPanned = true; setTimeout(() => { state.justPanned = false; }, 60); } pan = null; });
+  $('fitBtn').addEventListener('click', () => { zoom.z = 1; zoom.x = zoom.y = 0; applyZoom(); if (lastHi) { lastHi = false; renderPipeline(); } });
+  $('zoom1Btn').addEventListener('click', () => { const r = zoomR(); setZoom(1 / fitK, r.left + r.width / 2, r.top + r.height / 2); });
+  window.addEventListener('resize', fitCanvas);
+  $('toggleSidebarBtn').addEventListener('click', () => setTimeout(fitCanvas, 280));
+  $('previewQ').addEventListener('change', (e) => { state.previewQ = e.target.value; renderPipeline(); });
+
+  // ----- crop editor (draggable box) -----
+  function resetCropControls() { ['cropL', 'cropT', 'cropR', 'cropB'].forEach(id => $(id).value = 0); $('cropAspect').value = 'free'; }
+  function layoutCropOverlay() {
+    const ov = $('cropOverlay');
+    if (!state.cropEditing || !state.baseImg || !$('en_crop').checked) { ov.classList.add('hidden'); return; }
+    ov.classList.remove('hidden');
+    const r = canvas.getBoundingClientRect(), c = $('canvas-container').getBoundingClientRect(), g = id => parseFloat($(id).value);
+    const box = ov.firstElementChild;
+    box.style.left = (r.left - c.left + r.width * g('cropL') / 100) + 'px';
+    box.style.top = (r.top - c.top + r.height * g('cropT') / 100) + 'px';
+    box.style.width = (r.width * (100 - g('cropL') - g('cropR')) / 100) + 'px';
+    box.style.height = (r.height * (100 - g('cropT') - g('cropB')) / 100) + 'px';
+  }
+  function cropChanged(push) { updateLabels(); if (state.cropEditing) layoutCropOverlay(); else { applyCrop(); fitCanvas(); } if (push) pushHistory(); }
+  [['cropL', 'cropR'], ['cropT', 'cropB']].forEach(([p, q]) => [p, q].forEach((id, n) => {
+    $(id).addEventListener('input', () => {
+      const me = $(id), other = $(n ? p : q);
+      if (+me.value + +other.value > 90) me.value = 90 - other.value;
+      $('cropAspect').value = 'free'; cropChanged(false);
+    });
+  }));
+  function lockedRatio() { const v = $('cropAspect').value; if (v === 'free') return 0; const [a, b] = v.split(':').map(Number); return a / b; }
+  $('cropAspect').addEventListener('input', (e) => {
+    const r = lockedRatio(); if (!r || !state.baseImg) return;
+    const cur = orientCanvas.width / orientCanvas.height; let L = 0, T = 0;
+    if (cur > r) L = 50 * (1 - r / cur); else T = 50 * (1 - cur / r);
+    $('cropL').value = $('cropR').value = Math.min(45, L).toFixed(1); $('cropT').value = $('cropB').value = Math.min(45, T).toFixed(1);
+    cropChanged(false);
+  });
+  $('en_crop').addEventListener('input', () => cropChanged(false));
+  $('cropPanel').addEventListener('toggle', () => {
+    const open = $('cropPanel').open; if (open === state.cropEditing) return;
+    state.cropEditing = open; if (!open) applyCrop();
+    fitCanvas(); renderPipeline(); layoutCropOverlay();
+  });
+  $('cropResetBtn').addEventListener('click', () => { resetCropControls(); cropChanged(true); renderPipeline(); });
+  const cbox = $('cropOverlay').firstElementChild; let drag = null;
+  cbox.addEventListener('pointerdown', (e) => { e.stopPropagation(); e.preventDefault(); cbox.setPointerCapture(e.pointerId);
+    drag = { h: e.target.dataset.h || 'move', x: e.clientX, y: e.clientY, L: +$('cropL').value, T: +$('cropT').value, R: +$('cropR').value, B: +$('cropB').value }; });
+  cbox.addEventListener('pointermove', (e) => {
+    if (!drag) return;
+    const r = canvas.getBoundingClientRect(), dx = (e.clientX - drag.x) / r.width * 100, dy = (e.clientY - drag.y) / r.height * 100, MIN = 6, cl = (v, a, b) => Math.max(a, Math.min(b, v));
+    let { L, T, R, B } = drag; const h = drag.h;
+    if (h === 'move') { const wd = 100 - L - R, ht = 100 - T - B; L = cl(L + dx, 0, 100 - wd); R = 100 - wd - L; T = cl(T + dy, 0, 100 - ht); B = 100 - ht - T; }
+    else {
+      if (h.includes('w')) L = cl(L + dx, 0, 100 - R - MIN); if (h.includes('e')) R = cl(R - dx, 0, 100 - L - MIN);
+      if (h.includes('n')) T = cl(T + dy, 0, 100 - B - MIN); if (h.includes('s')) B = cl(B - dy, 0, 100 - T - MIN);
+      const ratio = lockedRatio();
+      if (ratio && h.length === 2) {
+        const nh = (100 - L - R) * orientCanvas.width / ratio / orientCanvas.height;
+        if (h.includes('n')) T = 100 - B - nh; else B = 100 - T - nh;
+        if (T < 0 || B < 0 || nh < MIN) return;
+      } else if (h.length === 1) $('cropAspect').value = 'free';
+    }
+    $('cropL').value = L.toFixed(1); $('cropR').value = R.toFixed(1); $('cropT').value = T.toFixed(1); $('cropB').value = B.toFixed(1);
+    updateLabels(); layoutCropOverlay();
+  });
+  const endDrag = () => { if (drag) { drag = null; pushHistory(); } };
+  cbox.addEventListener('pointerup', endDrag); cbox.addEventListener('pointercancel', endDrag);
+
+  // ----- rotate / flip -----
+  function doTransform(fn) {
+    if (!state.baseImg) return;
+    fn(state.transform); buildOriented(); resetCropControls(); updateLabels();
+    if (!state.cropEditing) applyCrop();
+    fitCanvas(); renderPipeline(); pushHistory();
+  }
+  $('rotLBtn').addEventListener('click', () => doTransform(t => t.rot = (t.rot + 3) % 4));
+  $('rotRBtn').addEventListener('click', () => doTransform(t => t.rot = (t.rot + 1) % 4));
+  $('flipHBtn').addEventListener('click', () => doTransform(t => t.fx = !t.fx));
+  $('flipVBtn').addEventListener('click', () => doTransform(t => t.fy = !t.fy));
+
   async function loadBaseImage(file) {
     if (!file) return;
-    const status = document.getElementById('resolutionDisplay');
+    const status = $('resolutionDisplay');
     status.textContent = 'DECODING ' + file.name.toUpperCase() + '…';
     try {
       state.baseImg = await decodeFile(file);
-      ['cropL', 'cropT', 'cropR', 'cropB'].forEach(id => document.getElementById(id).value = 0);
-      document.getElementById('cropAspect').value = 'free';
-      applyCrop();
-      document.getElementById('empty-state').classList.add('hidden');
-      canvas.classList.remove('hidden');
-      updateLabels();
-      renderPipeline();
+      state.transform = { rot: 0, fx: false, fy: false };
+      buildOriented(); resetCropControls(); applyCrop();
+      zoom.z = 1; zoom.x = zoom.y = 0; lastHi = false;
+      $('empty-state').classList.add('hidden'); canvas.classList.remove('hidden');
+      fitCanvas(); updateLabels(); renderPipeline();
+      hist.stack = []; hist.i = -1; pushHistory();
     } catch (err) {
       status.textContent = 'FAILED: ' + err.message.toUpperCase();
     }
   }
-
-  // ===== Crop =====
-  function applyCrop() {
-    const img = state.baseImg; if (!img) return;
-    const g = id => parseInt(document.getElementById(id).value, 10);
-    const iw = img.naturalWidth, ih = img.naturalHeight;
-    const sx = Math.round(iw * g('cropL') / 100), sy = Math.round(ih * g('cropT') / 100);
-    const sw = Math.max(8, Math.round(iw * (100 - g('cropL') - g('cropR')) / 100));
-    const sh = Math.max(8, Math.round(ih * (100 - g('cropT') - g('cropB')) / 100));
-    canvas.width = srcCanvas.width = sw; canvas.height = srcCanvas.height = sh;
-    srcCtx.drawImage(img, sx, sy, sw, sh, 0, 0, sw, sh);
-    document.getElementById('resolutionDisplay').textContent = `${sw} × ${sh} PX`;
-  }
-  [['cropL', 'cropR'], ['cropT', 'cropB']].forEach(([p, q]) => {
-    [p, q].forEach((id, n) => {
-      document.getElementById(id).addEventListener('input', () => {
-        const me = document.getElementById(id), other = document.getElementById(n ? p : q);
-        if (+me.value + +other.value > 90) me.value = 90 - other.value;
-        document.getElementById('cropAspect').value = 'free';
-        updateLabels(); applyCrop();
-      });
-    });
-  });
-  document.getElementById('cropAspect').addEventListener('input', (e) => {
-    if (!state.baseImg || e.target.value === 'free') return;
-    const [a, b] = e.target.value.split(':').map(Number);
-    const target = a / b, cur = state.baseImg.naturalWidth / state.baseImg.naturalHeight;
-    let L = 0, T = 0;
-    if (cur > target) L = Math.round(50 * (1 - target / cur)); else T = Math.round(50 * (1 - cur / target));
-    cropL.value = cropR.value = Math.min(45, L); cropT.value = cropB.value = Math.min(45, T);
-    updateLabels(); applyCrop();
-  });
-  document.getElementById('cropResetBtn').addEventListener('click', () => {
-    ['cropL', 'cropT', 'cropR', 'cropB'].forEach(id => document.getElementById(id).value = 0);
-    document.getElementById('cropAspect').value = 'free';
-    updateLabels(); applyCrop(); renderPipeline();
-  });
 
   document.getElementById('baseImageInput').addEventListener('change', (e) => { loadBaseImage(e.target.files[0]); });
 
@@ -1605,6 +1985,10 @@
     document.getElementById('textSizeVal').textContent = document.getElementById('textSize').value + 'px';
     document.getElementById('textXVal').textContent = document.getElementById('textX').value + '%';
     document.getElementById('textYVal').textContent = document.getElementById('textY').value + '%';
+    document.querySelectorAll('input[id^="mix_"]').forEach(el => { const v = document.getElementById(el.id + 'Val'); if (v) v.textContent = el.value + '%'; });
+    [['sortAngle','°'],['sortMax',''],['interOffset','px'],['interJitter','%'],['interDim','%'],['jpegQuality',''],['jpegCorrupt','%'],['ditherLevels',''],['ditherSize','px'],
+     ['edgeStrength','%'],['edgeThreshold','%'],['edgeGlow','px'],['ghostCount',''],['ghostSpacing','px'],['ghostAngle','°'],['ghostFade','%'],
+     ['exportQuality','%'],['animDuration','s'],['animFps',' fps']].forEach(([id, s]) => { const v = document.getElementById(id + 'Val'); if (v) v.textContent = document.getElementById(id).value + s; });
     [['sliceHeight','%'],['sliceShift','%'],['sliceAngle','°'],['sliceChroma','%'],['scanAngle','°'],['scanSpacing','px'],['scanThick','px'],
      ['blockSize','px'],['blockDensity','%'],['blockShift',''],['waveAmp','px'],['waveLen','px'],['waveAngle','°'],['waveTurb','%'],
      ['cropL','%'],['cropT','%'],['cropR','%'],['cropB','%']].forEach(([id, s]) => {
@@ -1623,27 +2007,59 @@
     });
   });
 
-  // RENDERING PIPELINE ENGINE
-  function renderPipeline() {
-    if (!state.baseImg) return;
+  // ===== RENDER ENGINE: ordered stages, per-stage mix, cached for fast preview =====
+  let RS = 1;
+  const stageCache = [];
+  const hash32 = id => [...id].reduce((a, c) => (a * 31 + c.charCodeAt(0)) | 0, 7);
+  function hs(s) { let h1 = 0xdeadbeef, h2 = 0x41c6ce57; for (let i = 0; i < s.length; i++) { const c = s.charCodeAt(i); h1 = Math.imul(h1 ^ c, 2654435761); h2 = Math.imul(h2 ^ c, 1597334677); }
+    h1 = Math.imul(h1 ^ (h1 >>> 16), 2246822507) ^ Math.imul(h2 ^ (h2 >>> 13), 3266489909); h2 = Math.imul(h2 ^ (h2 >>> 16), 2246822507) ^ Math.imul(h1 ^ (h1 >>> 13), 3266489909);
+    return (4294967296 * (2097151 & h2) + (h1 >>> 0)).toString(36); }
+  function paramSig(p) { let s = ''; p.querySelectorAll('input,select').forEach(e => { s += (e.type === 'checkbox' ? (e.checked ? 1 : 0) : e.value) + ','; }); return s; }
+  const DCT_C = (() => { const c = new Float32Array(64); for (let u = 0; u < 8; u++) for (let x = 0; x < 8; x++) c[u * 8 + x] = (u ? 0.5 : Math.sqrt(0.125)) * Math.cos((2 * x + 1) * u * Math.PI / 16); return c; })();
+  const JPEG_Q = [16,11,10,16,24,40,51,61,12,12,14,19,26,58,60,55,14,13,16,24,40,57,69,56,14,17,22,29,51,87,80,62,18,22,37,56,68,109,103,77,24,35,55,64,81,104,113,92,49,64,78,87,103,121,120,101,72,92,95,98,112,100,103,99];
+  function dct8(b, t, inv) {
+    const C = DCT_C;
+    if (!inv) {
+      for (let u = 0; u < 8; u++) for (let x = 0; x < 8; x++) { let s = 0; for (let y = 0; y < 8; y++) s += C[u * 8 + y] * b[y * 8 + x]; t[u * 8 + x] = s; }
+      for (let u = 0; u < 8; u++) for (let v = 0; v < 8; v++) { let s = 0; for (let x = 0; x < 8; x++) s += t[u * 8 + x] * C[v * 8 + x]; b[u * 8 + v] = s; }
+    } else {
+      for (let u = 0; u < 8; u++) for (let x = 0; x < 8; x++) { let s = 0; for (let v = 0; v < 8; v++) s += b[u * 8 + v] * C[v * 8 + x]; t[u * 8 + x] = s; }
+      for (let y = 0; y < 8; y++) for (let x = 0; x < 8; x++) { let s = 0; for (let u = 0; u < 8; u++) s += C[u * 8 + y] * t[u * 8 + x]; b[y * 8 + x] = s; }
+    }
+  }
+  function bayer(n) { let m = [[0]]; for (let s = 1; s < n; s *= 2) { const nm = []; for (let y = 0; y < 2 * s; y++) { nm[y] = []; for (let x = 0; x < 2 * s; x++) nm[y][x] = m[y % s][x % s] * 4 + [[0, 2], [3, 1]][Math.floor(y / s)][Math.floor(x / s)]; } m = nm; } return m; }
+  function boxBlur(a, w, h, r) {
+    if (r < 1) return a;
+    const t = new Float32Array(a.length), o = new Float32Array(a.length);
+    for (let y = 0; y < h; y++) { let s = 0, n = 0; const row = y * w;
+      for (let x = 0; x <= r && x < w; x++) { s += a[row + x]; n++; }
+      for (let x = 0; x < w; x++) { t[row + x] = s / n; const ad = x + r + 1, rm = x - r; if (ad < w) { s += a[row + ad]; n++; } if (rm >= 0) { s -= a[row + rm]; n--; } } }
+    for (let x = 0; x < w; x++) { let s = 0, n = 0;
+      for (let y = 0; y <= r && y < h; y++) { s += t[y * w + x]; n++; }
+      for (let y = 0; y < h; y++) { o[y * w + x] = s / n; const ad = y + r + 1, rm = y - r; if (ad < h) { s += t[ad * w + x]; n++; } if (rm >= 0) { s -= t[rm * w + x]; n--; } } }
+    return o;
+  }
 
-    const w = canvas.width;
-    const h = canvas.height;
-    const rand = mulberry32(state.seed);
-
-    const baseData = srcCtx.getImageData(0, 0, w, h);
-    const src = baseData.data;
-    const outData = ctx.createImageData(w, h);
+  function renderCore(octx, w, h, useCache) {
+    RS = w / srcCanvas.width;
+    const src = getSourceData(w, h).data;
+    const outData = octx.createImageData(w, h);
     const dst = outData.data;
     dst.set(src);
+    const $v = id => parseInt(document.getElementById(id).value, 10);
+    const pxv = id => { const v = $v(id), s = Math.round(v * RS); return v !== 0 && s === 0 ? Math.sign(v) : s; };
+    const stages = {};
 
+    stages.sort = (rand) => {
     // 1. PIXEL SORTING MODULATED COLOR TARGETING
     if (document.getElementById('sortEnabled').checked) {
       const dir = document.getElementById('sortDirection').value;
       const thresh = parseInt(document.getElementById('sortThreshold').value, 10);
-      const maxLen = parseInt(document.getElementById('sortLength').value, 10);
+      const maxLen = pxv('sortLength');
       const sortBy = document.getElementById('sortBy').value;
       const sortRev = document.getElementById('sortReverse').checked;
+      const sortMax = $v('sortMax');
+      const sAng = ((((dir === 'vertical' ? 90 : 0) + $v('sortAngle')) % 180) + 180) % 180;
       const sortKey = (r, g, b, l) => {
         if (sortBy === 'lum') return l;
         if (sortBy === 'red') return r; if (sortBy === 'green') return g; if (sortBy === 'blue') return b;
@@ -1654,7 +2070,37 @@
         return hh / 6 * 255;
       };
 
-      if (dir === 'horizontal') {
+      if (sAng !== 0 && sAng !== 90) {
+        const a = sAng * Math.PI / 180, ddx = Math.cos(a), ddy = Math.sin(a), nnx = -ddy, nny = ddx;
+        const spanN = Math.abs(w * nnx) + Math.abs(h * nny), spanT = Math.abs(w * ddx) + Math.abs(h * ddy);
+        const list = new Int32Array(Math.ceil(spanT) + 2);
+        for (let o = -spanN / 2; o <= spanN / 2; o++) {
+          let n = 0, last = -1;
+          for (let q = -spanT / 2; q <= spanT / 2; q++) {
+            const x = Math.round(w / 2 + nnx * o + ddx * q), y = Math.round(h / 2 + nny * o + ddy * q);
+            if (x < 0 || y < 0 || x >= w || y >= h) continue;
+            const id = y * w + x; if (id === last) continue;
+            list[n++] = id; last = id;
+          }
+          let i = 0;
+          while (i < n) {
+            const p = list[i] * 4, lum = 0.299 * dst[p] + 0.587 * dst[p + 1] + 0.114 * dst[p + 2];
+            if (evaluatePixelSelection('sort', dst[p], dst[p + 1], dst[p + 2]) && lum >= thresh && lum <= sortMax) {
+              const start = i, span = [];
+              while (i < n && span.length < maxLen) {
+                const c = list[i] * 4, cl = 0.299 * dst[c] + 0.587 * dst[c + 1] + 0.114 * dst[c + 2];
+                if (!evaluatePixelSelection('sort', dst[c], dst[c + 1], dst[c + 2]) || cl < thresh || cl > sortMax) break;
+                span.push({ r: dst[c], g: dst[c + 1], b: dst[c + 2], a: dst[c + 3], lum: sortKey(dst[c], dst[c + 1], dst[c + 2], cl) });
+                i++;
+              }
+              if (span.length > 1) {
+                span.sort((x, y) => sortRev ? y.lum - x.lum : x.lum - y.lum);
+                for (let k = 0; k < span.length; k++) { const q2 = list[start + k] * 4; dst[q2] = span[k].r; dst[q2 + 1] = span[k].g; dst[q2 + 2] = span[k].b; dst[q2 + 3] = span[k].a; }
+              }
+            } else i++;
+          }
+        }
+      } else if (sAng === 0) {
         for (let y = 0; y < h; y++) {
           let x = 0;
           while (x < w) {
@@ -1662,14 +2108,14 @@
             const lum = 0.299 * dst[idx] + 0.587 * dst[idx + 1] + 0.114 * dst[idx + 2];
             const match = evaluatePixelSelection('sort', dst[idx], dst[idx + 1], dst[idx + 2]);
 
-            if (match && lum >= thresh) {
+            if (match && lum >= thresh && lum <= sortMax) {
               let start = x;
               let span = [];
               while (x < w && span.length < maxLen) {
                 const cIdx = (y * w + x) * 4;
                 const cLum = 0.299 * dst[cIdx] + 0.587 * dst[cIdx + 1] + 0.114 * dst[cIdx + 2];
                 const cMatch = evaluatePixelSelection('sort', dst[cIdx], dst[cIdx + 1], dst[cIdx + 2]);
-                if (!cMatch || cLum < thresh) break;
+                if (!cMatch || cLum < thresh || cLum > sortMax) break;
                 span.push({ r: dst[cIdx], g: dst[cIdx + 1], b: dst[cIdx + 2], a: dst[cIdx + 3], lum: sortKey(dst[cIdx], dst[cIdx + 1], dst[cIdx + 2], cLum) });
                 x++;
               }
@@ -1691,14 +2137,14 @@
             const lum = 0.299 * dst[idx] + 0.587 * dst[idx + 1] + 0.114 * dst[idx + 2];
             const match = evaluatePixelSelection('sort', dst[idx], dst[idx + 1], dst[idx + 2]);
 
-            if (match && lum >= thresh) {
+            if (match && lum >= thresh && lum <= sortMax) {
               let start = y;
               let span = [];
               while (y < h && span.length < maxLen) {
                 const cIdx = (y * w + x) * 4;
                 const cLum = 0.299 * dst[cIdx] + 0.587 * dst[cIdx + 1] + 0.114 * dst[cIdx + 2];
                 const cMatch = evaluatePixelSelection('sort', dst[cIdx], dst[cIdx + 1], dst[cIdx + 2]);
-                if (!cMatch || cLum < thresh) break;
+                if (!cMatch || cLum < thresh || cLum > sortMax) break;
                 span.push({ r: dst[cIdx], g: dst[cIdx + 1], b: dst[cIdx + 2], a: dst[cIdx + 3], lum: sortKey(dst[cIdx], dst[cIdx + 1], dst[cIdx + 2], cLum) });
                 y++;
               }
@@ -1715,18 +2161,21 @@
       }
     }
 
+    };
+
+    stages.chroma = (rand) => {
     // 2. CHROMATIC ABERRATION & RGB CHANNEL SHIFTS
-    const abAmt = parseInt(document.getElementById('aberrationAmount').value, 10);
+    const abAmt = pxv('aberrationAmount');
     const abAng = parseInt(document.getElementById('aberrationAngle').value, 10) * (Math.PI / 180);
     const abX = Math.round(Math.cos(abAng) * abAmt);
     const abY = Math.round(Math.sin(abAng) * abAmt);
 
-    const rOffX = parseInt(document.getElementById('redX').value, 10) + abX;
-    const rOffY = parseInt(document.getElementById('redY').value, 10) + abY;
-    const gOffX = parseInt(document.getElementById('greenX').value, 10);
-    const gOffY = parseInt(document.getElementById('greenY').value, 10);
-    const bOffX = parseInt(document.getElementById('blueX').value, 10) - abX;
-    const bOffY = parseInt(document.getElementById('blueY').value, 10) - abY;
+    const rOffX = pxv('redX') + abX;
+    const rOffY = pxv('redY') + abY;
+    const gOffX = pxv('greenX');
+    const gOffY = pxv('greenY');
+    const bOffX = pxv('blueX') - abX;
+    const bOffY = pxv('blueY') - abY;
 
     if (rOffX !== 0 || rOffY !== 0 || gOffX !== 0 || gOffY !== 0 || bOffX !== 0 || bOffY !== 0) {
       const snap = new Uint8ClampedArray(dst);
@@ -1749,9 +2198,12 @@
       }
     }
 
+    };
+
+    stages.random = (rand) => {
     // 3. PIXEL SCATTER, GRAIN & NOISE
     const scatterPct = parseInt(document.getElementById('pixelScatter').value, 10) / 100;
-    const scatterRad = parseInt(document.getElementById('scatterRadius').value, 10);
+    const scatterRad = pxv('scatterRadius');
     const noiseAmt = parseInt(document.getElementById('pixelNoise').value, 10);
     const noiseColor = document.getElementById('noiseType').value === 'color';
 
@@ -1778,8 +2230,6 @@
         }
       }
     }
-
-    const $v = id => parseInt(document.getElementById(id).value, 10);
 
     // 4. SLICE TEAR — rotatable bands, variable height/shift, optional per-slice RGB split
     const slices = $v('sliceAmount');
@@ -1813,10 +2263,13 @@
       }
     }
 
+    };
+
+    stages.block = (rand) => {
     // 4b. BLOCK CORRUPTION (datamosh-style macroblock damage)
     if (document.getElementById('blockEnabled').checked) {
       const snap = new Uint8ClampedArray(dst);
-      const bs = $v('blockSize'), dens = $v('blockDensity') / 100, reach = $v('blockShift');
+      const bs = pxv('blockSize'), dens = $v('blockDensity') / 100, reach = $v('blockShift');
       const mode = document.getElementById('blockMode').value;
       for (let by = 0; by < h; by += bs) {
         for (let bx = 0; bx < w; bx += bs) {
@@ -1830,7 +2283,7 @@
           for (let y = by; y < y1; y++) {
             for (let x = bx; x < x1; x++) {
               const idx = (y * w + x) * 4;
-              if (!evaluatePixelSelection('random', snap[idx], snap[idx + 1], snap[idx + 2])) continue;
+              if (!evaluatePixelSelection('block', snap[idx], snap[idx + 1], snap[idx + 2])) continue;
               if (m === 'crush') {
                 dst[idx] = Math.round(snap[idx] / step) * step;
                 dst[idx + 1] = Math.round(snap[idx + 1] / step) * step;
@@ -1847,10 +2300,13 @@
       }
     }
 
+    };
+
+    stages.wave = (rand) => {
     // 4c. WAVE WARP (sine / stepped / radial ripple displacement)
-    if (document.getElementById('waveEnabled').checked && $v('waveAmp') > 0) {
+    if (document.getElementById('waveEnabled').checked && pxv('waveAmp') > 0) {
       const snap = new Uint8ClampedArray(dst);
-      const amp = $v('waveAmp'), len = $v('waveLen'), turb = $v('waveTurb') / 100;
+      const amp = pxv('waveAmp'), len = pxv('waveLen'), turb = $v('waveTurb') / 100;
       const shape = document.getElementById('waveShape').value;
       const ang = $v('waveAngle') * Math.PI / 180, dx = Math.cos(ang), dy = Math.sin(ang), nx = -dy, ny = dx;
       const phase = (state.seed % 1000) * 0.01, norm = 1 / (1 + 0.8 * turb), TAU = Math.PI * 2;
@@ -1869,31 +2325,37 @@
             sx = x + dx * o; sy = y + dy * o;
           }
           const idx = (y * w + x) * 4;
-          if (!evaluatePixelSelection('random', snap[idx], snap[idx + 1], snap[idx + 2])) continue;
+          if (!evaluatePixelSelection('wave', snap[idx], snap[idx + 1], snap[idx + 2])) continue;
           const s = (Math.min(h - 1, Math.max(0, Math.round(sy))) * w + Math.min(w - 1, Math.max(0, Math.round(sx)))) * 4;
           dst[idx] = snap[s]; dst[idx + 1] = snap[s + 1]; dst[idx + 2] = snap[s + 2];
         }
       }
     }
 
+    };
+
+    stages.scan = (rand) => {
     // 5. CRT SCANLINES — rotatable, adjustable spacing & thickness, anti-aliased
     const scanlinePct = $v('scanlineIntensity') / 100;
     if (scanlinePct > 0) {
       const sa = $v('scanAngle') * Math.PI / 180, snx = -Math.sin(sa), sny = Math.cos(sa);
-      const S = $v('scanSpacing'), T = Math.min($v('scanThick'), S);
+      const S = Math.max(2, pxv('scanSpacing')), T = Math.min(pxv('scanThick'), S);
       for (let y = 0; y < h; y++) {
         for (let x = 0; x < w; x++) {
           let p = (x * snx + y * sny) % S; if (p < 0) p += S;
           const cov = Math.max(Math.min(1, Math.max(0, T - p)), Math.min(1, Math.max(0, 1 - (S - p))));
           if (cov < 0.01) continue;
           const idx = (y * w + x) * 4;
-          if (!evaluatePixelSelection('random', dst[idx], dst[idx + 1], dst[idx + 2])) continue;
+          if (!evaluatePixelSelection('scan', dst[idx], dst[idx + 1], dst[idx + 2])) continue;
           const f = 1 - scanlinePct * cov;
           dst[idx] *= f; dst[idx + 1] *= f; dst[idx + 2] *= f;
         }
       }
     }
 
+    };
+
+    stages.texture = (rand) => {
     // 6. PROCEDURAL FRACTAL TEXTURE DISTORTION
     const textureStrength = parseInt(document.getElementById('textureStrength').value, 10) / 100;
     const textureMode = document.getElementById('textureMode').value;
@@ -1933,7 +2395,7 @@
         }
       } else {
         const snap = new Uint8ClampedArray(dst);
-        const stackHeight = parseInt(document.getElementById('textureStackHeight').value, 10);
+        const stackHeight = pxv('textureStackHeight');
         for (let y = 0; y < h; y++) {
           for (let x = 0; x < w; x++) {
             const idx = (y * w + x) * 4;
@@ -1951,6 +2413,9 @@
       }
     }
 
+    };
+
+    stages.dream = (rand) => {
     // 7. RECURSIVE AI-STYLE HALLUCINATION
     // Every pass samples a slightly zoomed-in version of the previous pass.
     // The feedback is then locally enhanced, so small structures accumulate
@@ -1961,7 +2426,7 @@
       let working = new Uint8ClampedArray(dst);
       const iterations = parseInt(document.getElementById('dreamIterations').value, 10);
       const zoomPerPass = parseInt(document.getElementById('dreamZoom').value, 10) / 1000;
-      const detailScale = parseInt(document.getElementById('dreamScale').value, 10);
+      const detailScale = pxv('dreamScale');
       const feedbackMode = document.getElementById('dreamStyle').value === 'feedback';
       const cx = (w - 1) * 0.5;
       const cy = (h - 1) * 0.5;
@@ -2025,10 +2490,13 @@
       }
     }
 
+    };
+
+    stages.retro = (rand) => {
     // 8. STANDALONE RETRO PIXELATOR & PALETTE QUANTIZER
     // This is deliberately a pure block-pixel + palette operation: no warp or wobble.
     if (document.getElementById('retroEnabled').checked) {
-      const pixelSize = parseInt(document.getElementById('retroPixelSize').value, 10);
+      const pixelSize = pxv('retroPixelSize');
       const colorCount = parseInt(document.getElementById('retroColorCount').value, 10);
       const strength = parseInt(document.getElementById('retroStrength').value, 10) / 100;
       const paletteName = document.getElementById('retroPalette').value;
@@ -2108,6 +2576,9 @@
       }
     }
 
+    };
+
+    stages.vhs = (rand) => {
     // 9. VHS ROT — waveform tracking damage, chroma loss, and signal dropouts.
     if (document.getElementById('vhsEnabled').checked) {
       const rot = parseInt(document.getElementById('vhsStrength').value, 10) / 100;
@@ -2188,10 +2659,142 @@
       }
     }
 
-    ctx.putImageData(outData, 0, 0);
+    };
+
+
+    stages.jpeg = (rand) => {
+      const q = $v('jpegQuality'), corrupt = $v('jpegCorrupt') / 100;
+      const sc = (q < 50 ? 5000 / q : 200 - q * 2) / 100;
+      const Q = JPEG_Q.map(v => Math.max(1, Math.round(v * sc)));
+      const N = w * h, Y = new Float32Array(N), Cb = new Float32Array(N), Cr = new Float32Array(N);
+      for (let i = 0, p = 0; i < N; i++, p += 4) {
+        const r = dst[p], g = dst[p + 1], b = dst[p + 2];
+        Y[i] = 0.299 * r + 0.587 * g + 0.114 * b - 128; Cb[i] = -0.168736 * r - 0.331264 * g + 0.5 * b; Cr[i] = 0.5 * r - 0.418688 * g - 0.081312 * b;
+      }
+      const blk = new Float32Array(64), tmp = new Float32Array(64);
+      const plane = (P, qs) => {
+        for (let by = 0; by < h; by += 8) for (let bx = 0; bx < w; bx += 8) {
+          for (let y = 0; y < 8; y++) for (let x = 0; x < 8; x++) blk[y * 8 + x] = P[Math.min(h - 1, by + y) * w + Math.min(w - 1, bx + x)];
+          dct8(blk, tmp, false);
+          const bad = rand() < corrupt;
+          for (let k = 0; k < 64; k++) { const s = Q[k] * qs; blk[k] = Math.round(blk[k] / s) * s; }
+          if (bad) { const n = 1 + Math.floor(rand() * 3); for (let i = 0; i < n; i++) { const k = Math.floor(rand() * 64); blk[k] += (rand() * 2 - 1) * (k === 0 ? 400 : 250); } }
+          dct8(blk, tmp, true);
+          for (let y = 0; y < 8 && by + y < h; y++) for (let x = 0; x < 8 && bx + x < w; x++) P[(by + y) * w + bx + x] = blk[y * 8 + x];
+        }
+      };
+      plane(Y, 1); plane(Cb, 1.6); plane(Cr, 1.6);
+      for (let i = 0, p = 0; i < N; i++, p += 4) {
+        const y = Y[i] + 128;
+        dst[p] = y + 1.402 * Cr[i]; dst[p + 1] = y - 0.344136 * Cb[i] - 0.714136 * Cr[i]; dst[p + 2] = y + 1.772 * Cb[i];
+      }
+    };
+
+    stages.interlace = (rand) => {
+      const off = pxv('interOffset'), jit = $v('interJitter') / 100, dim = 1 - $v('interDim') / 100;
+      const snap = new Uint8ClampedArray(dst);
+      for (let y = 0; y < h; y++) {
+        const s = (y & 1 ? off : -off) + Math.round((rand() * 2 - 1) * off * jit * 2), f = (y & 1) ? dim : 1;
+        for (let x = 0; x < w; x++) {
+          const sx = (((x + s) % w) + w) % w, i = (y * w + x) * 4, j = (y * w + sx) * 4;
+          dst[i] = snap[j] * f; dst[i + 1] = snap[j + 1] * f; dst[i + 2] = snap[j + 2] * f;
+        }
+      }
+    };
+
+    stages.dither = () => {
+      const mode = $('ditherMode').value, L = $v('ditherLevels'), B = pxv('ditherSize'), mono = $('ditherMono').checked, ink = hexToRgb($('ditherInk').value);
+      const cw = Math.ceil(w / B), ch = Math.ceil(h / B), nc = mono ? 1 : 3, step = 255 / (L - 1);
+      const cell = new Float32Array(cw * ch * nc);
+      for (let cy = 0; cy < ch; cy++) for (let cx = 0; cx < cw; cx++) {
+        const p = (Math.min(h - 1, cy * B + (B >> 1)) * w + Math.min(w - 1, cx * B + (B >> 1))) * 4, o = (cy * cw + cx) * nc;
+        if (mono) cell[o] = 0.299 * dst[p] + 0.587 * dst[p + 1] + 0.114 * dst[p + 2]; else { cell[o] = dst[p]; cell[o + 1] = dst[p + 1]; cell[o + 2] = dst[p + 2]; }
+      }
+      const q = v => Math.max(0, Math.min(255, Math.round(v / step) * step));
+      if (mode === 'fs') {
+        for (let cy = 0; cy < ch; cy++) for (let cx = 0; cx < cw; cx++) for (let c = 0; c < nc; c++) {
+          const idx = (cy * cw + cx) * nc + c, old = cell[idx], nv = q(old), err = old - nv, row = cw * nc;
+          cell[idx] = nv;
+          if (cx + 1 < cw) cell[idx + nc] += err * 7 / 16;
+          if (cy + 1 < ch) { if (cx > 0) cell[idx + row - nc] += err * 3 / 16; cell[idx + row] += err * 5 / 16; if (cx + 1 < cw) cell[idx + row + nc] += err / 16; }
+        }
+      } else if (mode !== 'halftone') {
+        const n = mode === 'bayer4' ? 4 : 8, M = bayer(n);
+        for (let cy = 0; cy < ch; cy++) for (let cx = 0; cx < cw; cx++) for (let c = 0; c < nc; c++) {
+          const idx = (cy * cw + cx) * nc + c; cell[idx] = q(cell[idx] + ((M[cy % n][cx % n] + 0.5) / (n * n) - 0.5) * step);
+        }
+      }
+      for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+        const i = (y * w + x) * 4, gx = Math.min(cw - 1, (x / B) | 0), gy = Math.min(ch - 1, (y / B) | 0), ci = (gy * cw + gx) * nc;
+        let k = 1;
+        if (mode === 'halftone') {
+          const lv = mono ? cell[ci] : 0.299 * cell[ci] + 0.587 * cell[ci + 1] + 0.114 * cell[ci + 2];
+          const d = Math.hypot(x + 0.5 - (gx + 0.5) * B, y + 0.5 - (gy + 0.5) * B), rad = Math.sqrt(lv / 255) * B * 0.72;
+          k = Math.max(0, Math.min(1, rad - d + 0.5));
+        }
+        if (mono) { const f = (mode === 'halftone' ? 1 : cell[ci] / 255) * k; dst[i] = ink.r * f; dst[i + 1] = ink.g * f; dst[i + 2] = ink.b * f; }
+        else { dst[i] = cell[ci] * k; dst[i + 1] = cell[ci + 1] * k; dst[i + 2] = cell[ci + 2] * k; }
+      }
+    };
+
+    stages.edge = () => {
+      const str = $v('edgeStrength') / 100, th = $v('edgeThreshold') / 100, gr = pxv('edgeGlow'), col = hexToRgb($('edgeColor').value), only = $('edgeOnly').checked;
+      const N = w * h, L = new Float32Array(N), E = new Float32Array(N);
+      for (let i = 0, p = 0; i < N; i++, p += 4) L[i] = 0.299 * dst[p] + 0.587 * dst[p + 1] + 0.114 * dst[p + 2];
+      for (let y = 1; y < h - 1; y++) for (let x = 1; x < w - 1; x++) {
+        const i = y * w + x;
+        const gx = -L[i - w - 1] - 2 * L[i - 1] - L[i + w - 1] + L[i - w + 1] + 2 * L[i + 1] + L[i + w + 1];
+        const gy = -L[i - w - 1] - 2 * L[i - w] - L[i - w + 1] + L[i + w - 1] + 2 * L[i + w] + L[i + w + 1];
+        E[i] = Math.max(0, (Math.min(1, Math.hypot(gx, gy) / 360) - th) / (1 - th + 1e-6));
+      }
+      const G = gr > 0 ? boxBlur(boxBlur(E, w, h, gr), w, h, gr) : null, k = only ? 0 : 1;
+      for (let i = 0, p = 0; i < N; i++, p += 4) {
+        const m = Math.min(1, E[i] + (G ? G[i] * 3 : 0)) * str;
+        dst[p] = Math.min(255, dst[p] * k + col.r * m); dst[p + 1] = Math.min(255, dst[p + 1] * k + col.g * m); dst[p + 2] = Math.min(255, dst[p + 2] * k + col.b * m);
+      }
+    };
+
+    stages.ghost = () => {
+      const n = $v('ghostCount'), sp = pxv('ghostSpacing'), a = $v('ghostAngle') * Math.PI / 180, fade = $v('ghostFade') / 100, mode = $('ghostMode').value;
+      const snap = new Uint8ClampedArray(dst), dx = Math.cos(a) * sp, dy = Math.sin(a) * sp, wts = [];
+      for (let k = 1; k <= n; k++) wts.push(Math.pow(fade, k));
+      for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+        const i = (y * w + x) * 4;
+        let r = snap[i], g = snap[i + 1], b = snap[i + 2], sw = 1, sr = r, sg = g, sb = b;
+        for (let k = 1; k <= n; k++) {
+          const sx = Math.min(w - 1, Math.max(0, Math.round(x - dx * k))), sy = Math.min(h - 1, Math.max(0, Math.round(y - dy * k))), j = (sy * w + sx) * 4, wt = wts[k - 1];
+          if (mode === 'lighten') { r = Math.max(r, snap[j] * wt); g = Math.max(g, snap[j + 1] * wt); b = Math.max(b, snap[j + 2] * wt); }
+          else if (mode === 'screen') { r = 255 - (255 - r) * (255 - snap[j] * wt) / 255; g = 255 - (255 - g) * (255 - snap[j + 1] * wt) / 255; b = 255 - (255 - b) * (255 - snap[j + 2] * wt) / 255; }
+          else { sr += snap[j] * wt; sg += snap[j + 1] * wt; sb += snap[j + 2] * wt; sw += wt; }
+        }
+        if (mode === 'average') { r = sr / sw; g = sg / sw; b = sb / sw; }
+        dst[i] = r; dst[i + 1] = g; dst[i + 2] = b;
+      }
+    };
+
+    const gkey = [state.srcVer, w, h, state.seed, $('masterOverrideSelect').value, $('masterColor').value, $('masterTolerance').value, JSON.stringify(state.tools)].join('|');
+    let prev = hs(gkey), have = null, valid = true;
+    const ensure = () => { if (!valid) { dst.set(have || src); valid = true; } };
+    state.order.forEach((id, i) => {
+      const panel = document.querySelector('details[data-stage="' + id + '"]');
+      const on = panel.querySelector('.stage-toggle').checked;
+      const mix = $('mix_' + id).value / 100;
+      const key = hs(prev + '>' + id + (on ? ':' + paramSig(panel) : ':off'));
+      prev = key;
+      if (!on) return;
+      if (useCache && stageCache[i] && stageCache[i].key === key) { have = stageCache[i].data; valid = false; return; }
+      ensure();
+      const before = mix < 1 ? new Uint8ClampedArray(dst) : null;
+      stages[id](mulberry32((state.seed + hash32(id)) >>> 0));
+      if (before) for (let k = 0; k < dst.length; k++) dst[k] = before[k] + (dst[k] - before[k]) * mix;
+      if (useCache) { have = new Uint8ClampedArray(dst); stageCache[i] = { key, data: have }; valid = true; }
+    });
+    ensure();
+
+    octx.putImageData(outData, 0, 0);
 
     // 8. DOUBLE EXPOSURE
-    if (state.secondImg) {
+    if (state.secondImg && document.getElementById('en_double').checked) {
       const sImg = state.secondImg;
       const scale = Math.max(w / sImg.naturalWidth, h / sImg.naturalHeight);
       const drawW = sImg.naturalWidth * scale;
@@ -2199,55 +2802,68 @@
       const offsetX = (w - drawW) / 2;
       const offsetY = (h - drawH) / 2;
 
-      ctx.save();
-      ctx.globalCompositeOperation = document.getElementById('doubleBlendMode').value;
-      ctx.globalAlpha = parseInt(document.getElementById('doubleOpacity').value, 10) / 100;
-      ctx.drawImage(sImg, offsetX, offsetY, drawW, drawH);
-      ctx.restore();
+      octx.save();
+      octx.globalCompositeOperation = document.getElementById('doubleBlendMode').value;
+      octx.globalAlpha = parseInt(document.getElementById('doubleOpacity').value, 10) / 100;
+      octx.drawImage(sImg, offsetX, offsetY, drawW, drawH);
+      octx.restore();
     }
 
     // 9. TEXT GLITCH LAYER
     const text = document.getElementById('textContent').value;
-    if (text.trim().length > 0) {
+    if (text.trim().length > 0 && document.getElementById('en_text').checked) {
       const font = document.getElementById('textFont').value;
-      const size = parseInt(document.getElementById('textSize').value, 10);
+      const size = pxv('textSize');
       const color = document.getElementById('textColor').value;
       const tx = (parseInt(document.getElementById('textX').value, 10) / 100) * w;
       const ty = (parseInt(document.getElementById('textY').value, 10) / 100) * h;
       const glitchText = document.getElementById('textGlitch').checked;
 
-      ctx.save();
-      ctx.font = `bold ${size}px ${font}`;
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
+      octx.save();
+      octx.font = `bold ${size}px ${font}`;
+      octx.textAlign = 'center';
+      octx.textBaseline = 'middle';
 
       if (glitchText) {
         const shift = Math.max(3, Math.round(size * 0.06));
-        ctx.fillStyle = 'rgba(255, 0, 85, 0.85)'; ctx.fillText(text, tx - shift, ty);
-        ctx.fillStyle = 'rgba(0, 240, 255, 0.85)'; ctx.fillText(text, tx + shift, ty);
+        octx.fillStyle = 'rgba(255, 0, 85, 0.85)'; octx.fillText(text, tx - shift, ty);
+        octx.fillStyle = 'rgba(0, 240, 255, 0.85)'; octx.fillText(text, tx + shift, ty);
       }
 
-      ctx.fillStyle = color;
-      ctx.fillText(text, tx, ty);
-      ctx.restore();
+      octx.fillStyle = color;
+      octx.fillText(text, tx, ty);
+      octx.restore();
     }
   }
 
-  function exportImage(format) {
+  function renderExportCanvas() {
+    if (state.cropEditing) applyCrop();
+    const sc = parseFloat($('exportScale').value), sw = srcCanvas.width, sh = srcCanvas.height;
+    const k = Math.min(sc, 6000 / Math.max(sw, sh)), tw = Math.round(sw * k), th = Math.round(sh * k);
+    const c = document.createElement('canvas'); c.width = tw; c.height = th;
+    renderCore(c.getContext('2d'), tw, th, false);
+    return c;
+  }
+  function saveBlob(blob, name) {
+    const url = URL.createObjectURL(blob), a = document.createElement('a');
+    a.download = name; a.href = url; a.click(); setTimeout(() => URL.revokeObjectURL(url), 8000);
+  }
+  async function exportImage(format) {
     if (!state.baseImg) return;
-    const mime = format === 'jpg' ? 'image/jpeg' : 'image/png';
-    const dataURL = canvas.toDataURL(mime, 0.96);
-    const link = document.createElement('a');
-    link.download = `GlitchRip_${Date.now()}.${format}`;
-    link.href = dataURL;
-    link.click();
+    const st = $('resolutionDisplay'), old = st.textContent;
+    st.textContent = 'RENDERING EXPORT…';
+    await new Promise(r => setTimeout(r, 30));
+    const c = renderExportCanvas();
+    c.toBlob(blob => { saveBlob(blob, `GlitchRip_${Date.now()}.${format}`); st.textContent = old; renderPipeline(); },
+      format === 'jpg' ? 'image/jpeg' : 'image/png', parseInt($('exportQuality').value, 10) / 100);
   }
 
   function exportPDF() {
     if (!state.baseImg) return;
-    const w = canvas.width;
-    const h = canvas.height;
-    const jpegDataUrl = canvas.toDataURL('image/jpeg', 0.95);
+    const ec = renderExportCanvas();
+    const w = ec.width;
+    const h = ec.height;
+    const jpegDataUrl = ec.toDataURL('image/jpeg', parseInt($('exportQuality').value, 10) / 100);
     const base64 = jpegDataUrl.split(',')[1];
     const raw = atob(base64);
     const imgBytes = new Uint8Array(raw.length);
@@ -2281,6 +2897,194 @@
     link.click();
     setTimeout(() => URL.revokeObjectURL(url), 5000);
   }
+
+  // ===== v3: toggles, history, presets, randomize, stack, seed, compare, animation =====
+  const STAGES = state.order.slice();
+  const SAVE_SEL = '#sidebar input:not([type=file]):not([data-nosave]), #sidebar select:not([data-nosave])';
+  const stageEl = id => document.querySelector('details[data-stage="' + id + '"]');
+  const stageTitle = id => stageEl(id).querySelector('summary > span').textContent;
+
+  function syncPanels() { document.querySelectorAll('.stage-toggle').forEach(cb => cb.closest('details').classList.toggle('off', !cb.checked)); }
+  function syncDomOrder() { const anchor = stageEl('double'); state.order.forEach(id => anchor.parentNode.insertBefore(stageEl(id), anchor)); }
+  function renderStack() {
+    const list = $('stackList'); list.innerHTML = '';
+    state.order.forEach((id, i) => {
+      const r = document.createElement('div'); r.className = 'srow'; r.dataset.id = id;
+      r.innerHTML = `<span class="dot ${stageEl(id).querySelector('.stage-toggle').checked ? 'on' : ''}"></span><span class="nm">${stageTitle(id)}</span>` +
+        `<button class="mv" data-d="-1" ${i === 0 ? 'disabled' : ''}>▲</button><button class="mv" data-d="1" ${i === state.order.length - 1 ? 'disabled' : ''}>▼</button>`;
+      list.appendChild(r);
+    });
+  }
+  $('stackList').addEventListener('click', (e) => {
+    const row = e.target.closest('.srow'); if (!row) return;
+    const id = row.dataset.id, i = state.order.indexOf(id);
+    if (e.target.classList.contains('mv')) {
+      const j = i + parseInt(e.target.dataset.d, 10); if (j < 0 || j >= state.order.length) return;
+      [state.order[i], state.order[j]] = [state.order[j], state.order[i]];
+      syncDomOrder(); renderStack(); renderPipeline(); pushHistory();
+    } else if (e.target.classList.contains('nm')) { const p = stageEl(id); p.open = true; p.scrollIntoView({ block: 'nearest', behavior: 'smooth' }); }
+  });
+  // The switch is a native checkbox inside <summary>: it toggles itself and never expands the panel.
+  document.querySelectorAll('summary .sw').forEach(sw => sw.addEventListener('click', (e) => e.stopPropagation()));
+  document.querySelectorAll('.stage-toggle').forEach(cb => cb.addEventListener('input', () => { syncPanels(); renderStack(); }));
+
+  // ----- settings snapshot / restore -----
+  function getSettings(withTr) {
+    const v = {};
+    document.querySelectorAll(SAVE_SEL).forEach(el => { if (el.id) v[el.id] = el.type === 'checkbox' ? el.checked : el.value; });
+    const s = { v, order: state.order.slice(), seed: state.seed, scope: { sort: state.tools.sort.mode, chroma: state.tools.chroma.mode, random: state.tools.random.mode } };
+    if (withTr) s.tr = Object.assign({}, state.transform);
+    return s;
+  }
+  function applySettings(s) {
+    state.suspend = true;
+    Object.entries(s.v).forEach(([id, val]) => { const el = $(id); if (!el) return; if (el.type === 'checkbox') el.checked = !!val; else el.value = val; });
+    if (s.order && s.order.length === STAGES.length) state.order = s.order.slice();
+    if (s.seed != null) { state.seed = s.seed; $('seedInput').value = s.seed; }
+    ['sort', 'chroma', 'random'].forEach(tool => {
+      const m = (s.scope && s.scope[tool]) || 'global'; state.tools[tool].mode = m;
+      document.querySelectorAll('.scope-toggle[data-tool="' + tool + '"] button').forEach(b => b.classList.toggle('active', b.dataset.mode === m));
+      $(tool + 'ColorFields').classList.toggle('hidden', m !== 'color');
+      state.tools[tool].rgb = hexToRgb($(tool + 'Color').value);
+    });
+    state.masterOverride = $('masterOverrideSelect').value; state.masterRGB = hexToRgb($('masterColor').value);
+    $('masterColorControls').classList.toggle('hidden', state.masterOverride !== 'force-color');
+    if (s.tr && state.baseImg && JSON.stringify(s.tr) !== JSON.stringify(state.transform)) { state.transform = Object.assign({}, s.tr); buildOriented(); }
+    updateTextureControlVisibility(); updateLabels(); syncPanels(); syncDomOrder(); renderStack();
+    state.suspend = false;
+    if (state.baseImg) { if (!state.cropEditing) applyCrop(); fitCanvas(); }
+    renderPipeline();
+  }
+  const stripCrop = v => Object.fromEntries(Object.entries(v).filter(([k]) => !/^(crop|en_crop)/.test(k)));
+
+  // ----- undo / redo -----
+  const hist = { stack: [], i: -1 };
+  function updateHistBtns() { $('undoBtn').disabled = hist.i <= 0; $('redoBtn').disabled = hist.i >= hist.stack.length - 1; }
+  function pushHistory() {
+    if (state.suspend || !state.baseImg) return;
+    const s = JSON.stringify(getSettings(true));
+    if (hist.stack[hist.i] === s) return;
+    hist.stack = hist.stack.slice(0, hist.i + 1); hist.stack.push(s);
+    if (hist.stack.length > 60) hist.stack.shift();
+    hist.i = hist.stack.length - 1; updateHistBtns();
+  }
+  function undo() { if (hist.i > 0) { hist.i--; applySettings(JSON.parse(hist.stack[hist.i])); updateHistBtns(); } }
+  function redo() { if (hist.i < hist.stack.length - 1) { hist.i++; applySettings(JSON.parse(hist.stack[hist.i])); updateHistBtns(); } }
+  $('undoBtn').addEventListener('click', undo); $('redoBtn').addEventListener('click', redo);
+  $('sidebar').addEventListener('change', () => pushHistory());
+  document.querySelectorAll('.scope-toggle').forEach(p => p.addEventListener('click', () => pushHistory()));
+
+  // ----- seed -----
+  function setSeed(n) { state.seed = Math.max(0, Math.min(999999, parseInt(n, 10) || 0)); $('seedInput').value = state.seed; renderPipeline(); pushHistory(); }
+  $('seedInput').addEventListener('change', (e) => setSeed(e.target.value));
+  $('reseedBtn').addEventListener('click', () => { $('seedInput').value = state.seed; pushHistory(); });
+
+  // ----- hold to compare -----
+  function holdOrig(on) { if (state.showOrig === on) return; state.showOrig = on; $('origBtn').classList.toggle('hold-on', on); renderPipeline(); }
+  ['pointerdown'].forEach(ev => $('origBtn').addEventListener(ev, () => holdOrig(true)));
+  ['pointerup', 'pointerleave', 'pointercancel'].forEach(ev => $('origBtn').addEventListener(ev, () => holdOrig(false)));
+  const typing = el => el && el.matches && el.matches('input[type=text],input[type=number],textarea');
+  window.addEventListener('keydown', (e) => {
+    if (typing(e.target)) return;
+    const k = e.key.toLowerCase(), mod = e.ctrlKey || e.metaKey;
+    if (mod && k === 'z') { e.preventDefault(); e.shiftKey ? redo() : undo(); }
+    else if (mod && k === 'y') { e.preventDefault(); redo(); }
+    else if (!mod && k === 'o' && !e.repeat) holdOrig(true);
+  });
+  window.addEventListener('keyup', (e) => { if (e.key.toLowerCase() === 'o') holdOrig(false); });
+
+  // ----- presets -----
+  const DEFAULTS = getSettings(true);
+  const BUILTIN = {
+    'VHS Meltdown': { vhsEnabled: true, vhsStrength: 70, vhsDropout: 45, vhsColorLoss: 60, vhsBands: 24, aberrationAmount: 6, pixelNoise: 28, scanlineIntensity: 35, scanSpacing: 3 },
+    'Datamosh': { blockEnabled: true, blockMode: 'mixed', blockSize: 24, blockDensity: 28, blockShift: 8, sliceAmount: 14, sliceHeight: 5, sliceChroma: 40, aberrationAmount: 8 },
+    'Neon Edge': { en_edge: true, edgeStrength: 90, edgeThreshold: 12, edgeGlow: 6, en_ghost: true, ghostCount: 4, ghostSpacing: 18, ghostMode: 'screen', ghostFade: 55 },
+    'Dead Fax': { en_dither: true, ditherMode: 'bayer8', ditherLevels: 2, ditherSize: 2, ditherMono: true, ditherInk: '#e8ebe9', en_jpeg: true, jpegQuality: 6, jpegCorrupt: 14 },
+    'Broken Signal': { waveEnabled: true, waveShape: 'stepped', waveAmp: 40, waveLen: 220, en_interlace: true, interOffset: 14, interJitter: 40, en_scan: true, scanlineIntensity: 40, scanAngle: 12, sortEnabled: true, sortAngle: 20, sortThreshold: 140 }
+  };
+  const loadUser = () => { try { return JSON.parse(localStorage.getItem('glitchrip.presets') || '{}'); } catch (e) { return {}; } };
+  const saveUser = o => { try { localStorage.setItem('glitchrip.presets', JSON.stringify(o)); return true; } catch (e) { alert('Could not save: browser storage is unavailable here.'); return false; } };
+  function refreshPresetList() {
+    const sel = $('presetSelect'), u = loadUser();
+    sel.innerHTML = '<optgroup label="Built-in">' + Object.keys(BUILTIN).map(n => `<option value="b:${n}">${n}</option>`).join('') + '</optgroup>' +
+      (Object.keys(u).length ? '<optgroup label="Saved">' + Object.keys(u).map(n => `<option value="u:${n}">${n}</option>`).join('') + '</optgroup>' : '');
+  }
+  function loadPreset(val) {
+    const [kind, name] = [val.slice(0, 1), val.slice(2)];
+    let s;
+    if (kind === 'b') s = { v: Object.assign({}, stripCrop(DEFAULTS.v), BUILTIN[name]), order: DEFAULTS.order, scope: DEFAULTS.scope, seed: state.seed };
+    else { const p = loadUser()[name]; if (!p) return; s = { v: Object.assign({}, stripCrop(DEFAULTS.v), stripCrop(p.v)), order: p.order, scope: p.scope, seed: p.seed }; }
+    applySettings(s); pushHistory();
+  }
+  $('presetLoadBtn').addEventListener('click', () => { if ($('presetSelect').value) loadPreset($('presetSelect').value); });
+  $('presetSaveBtn').addEventListener('click', () => {
+    const name = $('presetName').value.trim(); if (!name) { $('presetName').focus(); return; }
+    const u = loadUser(), s = getSettings(false); s.v = stripCrop(s.v); u[name] = s;
+    if (saveUser(u)) { refreshPresetList(); $('presetSelect').value = 'u:' + name; $('presetName').value = ''; }
+  });
+  $('presetDelBtn').addEventListener('click', () => {
+    const v = $('presetSelect').value; if (!v || v[0] !== 'u') return;
+    const u = loadUser(); delete u[v.slice(2)]; saveUser(u); refreshPresetList();
+  });
+
+  // ----- randomize -----
+  $('randomBtn').addEventListener('click', () => {
+    const rnd = Math.random, pick = new Set(), n = 3 + Math.floor(rnd() * 3);
+    while (pick.size < n) pick.add(STAGES[Math.floor(rnd() * STAGES.length)]);
+    state.suspend = true;
+    STAGES.forEach(id => {
+      const p = stageEl(id); p.querySelector('.stage-toggle').checked = pick.has(id); if (!pick.has(id)) return;
+      p.querySelectorAll('input[type=range]').forEach(r => {
+        if (/^mix_|Tolerance$/.test(r.id)) return;
+        const mn = +r.min, mx = +r.max, st = +r.step || 1;
+        const v = mn < 0 ? (rnd() * 2 - 1) * mx * rnd() : mn + (mx - mn) * Math.pow(rnd(), 1.7);
+        r.value = Math.round(v / st) * st;
+      });
+      p.querySelectorAll('select').forEach(s => { s.selectedIndex = Math.floor(rnd() * s.options.length); });
+    });
+    if (rnd() < 0.5) for (let i = state.order.length - 1; i > 0; i--) { const j = Math.floor(rnd() * (i + 1)); [state.order[i], state.order[j]] = [state.order[j], state.order[i]]; }
+    state.seed = Math.floor(rnd() * 100000); $('seedInput').value = state.seed;
+    updateTextureControlVisibility(); updateLabels(); syncPanels(); syncDomOrder(); renderStack();
+    state.suspend = false; renderPipeline(); pushHistory();
+  });
+
+  // ----- reset studio (extends the original handler) -----
+  $('resetAllBtn').addEventListener('click', () => { state.order = DEFAULTS.order.slice(); applySettings(DEFAULTS); pushHistory(); });
+
+  // ----- animated WebM export -----
+  $('webmBtn').addEventListener('click', async () => {
+    if (!state.baseImg) return;
+    if (!window.MediaRecorder) { alert('This browser cannot record video from a canvas.'); return; }
+    const mime = ['video/webm;codecs=vp9', 'video/webm;codecs=vp8', 'video/webm'].find(m => MediaRecorder.isTypeSupported(m));
+    if (!mime) { alert('WebM recording is not supported in this browser (try Chrome, Edge or Firefox).'); return; }
+    if (state.cropEditing) applyCrop();
+    const st = $('resolutionDisplay'), old = st.textContent, btn = $('webmBtn'); btn.disabled = true;
+    const fps = parseInt($('animFps').value, 10), frames = Math.min(120, Math.round(parseInt($('animDuration').value, 10) * fps));
+    const k = Math.min(1, 1080 / Math.max(srcCanvas.width, srcCanvas.height));
+    const tw = Math.max(2, Math.round(srcCanvas.width * k / 2) * 2), th = Math.max(2, Math.round(srcCanvas.height * k / 2) * 2);
+    const ac = document.createElement('canvas'); ac.width = tw; ac.height = th; const acx = ac.getContext('2d');
+    const baseSeed = state.seed, bitmaps = [];
+    try {
+      for (let f = 0; f < frames; f++) {
+        st.textContent = `RENDERING FRAME ${f + 1}/${frames}`;
+        await new Promise(r => setTimeout(r, 0));
+        state.seed = baseSeed + f * 7919; renderCore(acx, tw, th, false);
+        bitmaps.push(await createImageBitmap(ac));
+      }
+    } finally { state.seed = baseSeed; }
+    const stream = ac.captureStream(0), track = stream.getVideoTracks()[0];
+    const rec = new MediaRecorder(stream, { mimeType: mime, videoBitsPerSecond: 8e6 }), chunks = [];
+    rec.ondataavailable = e => { if (e.data.size) chunks.push(e.data); };
+    const done = new Promise(r => { rec.onstop = r; });
+    rec.start(); st.textContent = 'ENCODING…';
+    for (let f = 0; f < frames; f++) { acx.clearRect(0, 0, tw, th); acx.drawImage(bitmaps[f], 0, 0); if (track.requestFrame) track.requestFrame(); await new Promise(r => setTimeout(r, 1000 / fps)); }
+    rec.stop(); await done;
+    saveBlob(new Blob(chunks, { type: 'video/webm' }), `GlitchRip_${Date.now()}.webm`);
+    bitmaps.forEach(b => b.close()); btn.disabled = false; st.textContent = old; renderPipeline();
+  });
+
+  // ----- initial sync -----
+  syncPanels(); syncDomOrder(); renderStack(); refreshPresetList(); updateLabels(); $('seedInput').value = state.seed;
 </script>
 </body>
 </html>
