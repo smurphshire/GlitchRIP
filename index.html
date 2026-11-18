@@ -491,7 +491,7 @@
   <aside id="sidebar">
     <div class="brand-header">
       <span class="brand-title">GlitchRip</span>
-      <span class="brand-tag">v3.1</span>
+      <span class="brand-tag">v3.2</span>
     </div>
 
     <div class="panel-scroll">
@@ -892,15 +892,89 @@
           <div class="control-row">
             <div class="control-header"><span>Color Palette</span></div>
             <select id="retroPalette">
+            <optgroup label="Classic">
               <option value="gameboy">Game Boy · 4 tone</option>
               <option value="pico8">PICO-8 inspired</option>
               <option value="dawnbringer">DawnBringer inspired</option>
               <option value="cga">CGA / DOS</option>
               <option value="vaporwave">Vaporwave</option>
               <option value="amiga">Amiga 16</option>
-              <option value="mono">Black & White</option>
+              <option value="mono">Black &amp; White</option>
               <option value="custom">Custom color count · sampled</option>
-            </select>
+            </optgroup>
+            <optgroup label="Retro Hardware">
+              <option value="gbpocket">Game Boy Pocket</option>
+              <option value="vboy">Virtual Boy · reds</option>
+              <option value="c64">Commodore 64</option>
+              <option value="zx">ZX Spectrum</option>
+              <option value="apple2">Apple II</option>
+              <option value="msx">MSX</option>
+              <option value="win16">Windows 16</option>
+              <option value="teletext">Teletext · 8 color</option>
+            </optgroup>
+            <optgroup label="Pixel Art &amp; Game Boy Mods">
+              <option value="sweetie16">Sweetie 16 / TIC-80</option>
+              <option value="edg32">Endesga 32</option>
+              <option value="arne16">Arne 16</option>
+              <option value="na16">NA16</option>
+              <option value="slso8">SLSO8</option>
+              <option value="oil6">Oil 6</option>
+              <option value="icecream">Ice Cream GB</option>
+              <option value="kirokaze">Kirokaze GB</option>
+              <option value="mist">Mist GB</option>
+              <option value="rustic">Rustic GB</option>
+              <option value="spacehaze">Spacehaze</option>
+              <option value="lavagb">Lava GB</option>
+            </optgroup>
+            <optgroup label="Editor Themes">
+              <option value="nord">Nord</option>
+              <option value="solarized">Solarized</option>
+              <option value="dracula">Dracula</option>
+              <option value="gruvbox">Gruvbox</option>
+              <option value="monokai">Monokai</option>
+            </optgroup>
+            <optgroup label="Mood &amp; Neon">
+              <option value="cyberpunk">Cyberpunk</option>
+              <option value="synthwave">Synthwave</option>
+              <option value="neonpop">Neon Pop</option>
+              <option value="matrix">Matrix Green</option>
+              <option value="amber">Amber Monitor</option>
+              <option value="phosphor">Phosphor Green</option>
+              <option value="blueprint">Blueprint</option>
+              <option value="sunset">Sunset</option>
+              <option value="ocean">Ocean</option>
+              <option value="forest">Forest</option>
+              <option value="autumn">Autumn</option>
+              <option value="pastel">Pastel</option>
+              <option value="sepia">Sepia</option>
+              <option value="rainbow">Rainbow · ROYGBIV</option>
+              <option value="inferno">Inferno heat map</option>
+              <option value="viridis">Viridis</option>
+            </optgroup>
+            <optgroup label="Duotone Ramps">
+              <option value="duo_pinkblue">Duotone · Midnight Pink</option>
+              <option value="duo_toxic">Duotone · Toxic Green</option>
+              <option value="duo_sunset">Duotone · Amber Dusk</option>
+              <option value="duo_ice">Duotone · Ice</option>
+              <option value="duo_blood">Duotone · Blood</option>
+            </optgroup>
+            <optgroup label="Print &amp; Ink">
+              <option value="cmyk8">CMYK inks + overprints</option>
+              <option value="riso">Risograph inks</option>
+              <option value="screenprint">Screenprint · 4 inks</option>
+              <option value="newsprint">Newsprint</option>
+            </optgroup>
+            <optgroup label="Grayscale">
+              <option value="gray4">Grayscale · 4 level</option>
+              <option value="gray8">Grayscale · 8 level</option>
+              <option value="gray16">Grayscale · 16 level</option>
+            </optgroup>
+            <optgroup label="Your Colors">
+              <option value="swatches">Custom · pick 6 swatches</option>
+            </optgroup>
+          </select>
+          <div id="retroPreview" style="display:flex;height:12px;border-radius:3px;overflow:hidden;margin-top:6px;border:1px solid var(--border);"></div>
+          <div id="retroSwatchRow" class="hidden" style="display:grid;grid-template-columns:repeat(6,1fr);gap:6px;margin-top:8px;"><input type="color" id="retroSwatch1" value="#0f0f1a" title="Swatch 1" style="width:100%;height:30px;padding:0;"><input type="color" id="retroSwatch2" value="#ff2e63" title="Swatch 2" style="width:100%;height:30px;padding:0;"><input type="color" id="retroSwatch3" value="#ffd166" title="Swatch 3" style="width:100%;height:30px;padding:0;"><input type="color" id="retroSwatch4" value="#06d6a0" title="Swatch 4" style="width:100%;height:30px;padding:0;"><input type="color" id="retroSwatch5" value="#118ab2" title="Swatch 5" style="width:100%;height:30px;padding:0;"><input type="color" id="retroSwatch6" value="#f1f1f1" title="Swatch 6" style="width:100%;height:30px;padding:0;"></div>
           </div>
           <div class="control-row">
             <div class="control-header">
@@ -909,9 +983,9 @@
             </div>
             <input type="range" id="retroPixelSize" min="1" max="32" value="6">
           </div>
-          <div class="control-row">
+          <div class="control-row" id="retroColorCountRow">
             <div class="control-header">
-              <span>Palette Colors</span>
+              <span>Palette Colors (sampled mode)</span>
               <span class="control-val" id="retroColorCountVal">8</span>
             </div>
             <input type="range" id="retroColorCount" min="2" max="16" value="8">
@@ -941,6 +1015,10 @@
               <span class="control-val" id="vhsStrengthVal">45%</span>
             </div>
             <input type="range" id="vhsStrength" min="0" max="100" value="45">
+          </div>
+          <div class="control-row">
+            <div class="control-header"><span>Warp Distortion</span><span class="control-val" id="vhsWarpVal">45%</span></div>
+            <input type="range" id="vhsWarp" min="0" max="100" value="45">
           </div>
           <div class="control-row">
             <div class="control-header">
@@ -1173,6 +1251,130 @@
         </div>
       </details>
 
+      <details class="effect-group" data-stage="print">
+        <summary><span>Print Error FX</span><span class="sw"><input type="checkbox" class="stage-toggle" id="en_print"></span></summary>
+        <div class="group-body">
+          <div class="control-row">
+            <div class="control-header"><span>Effect Mix</span><span class="control-val" id="mix_printVal">100%</span></div>
+            <input type="range" id="mix_print" min="0" max="100" value="100">
+          </div>
+          <div class="control-row">
+            <div class="control-header"><span>CMYK Aberration</span><span class="control-val" id="printAberrVal">0px</span></div>
+            <input type="range" id="printAberr" min="0" max="60" value="0">
+          </div>
+          <div class="control-row">
+            <div class="control-header"><span>Aberration Angle</span><span class="control-val" id="printAberrAngleVal">0°</span></div>
+            <input type="range" id="printAberrAngle" min="0" max="360" value="0">
+          </div>
+          <hr style="border:0; border-top:1px solid var(--border);">
+          <div class="control-row">
+            <div class="control-header"><span>Cyan X / Y</span><span class="control-val" id="printCOffsetVal">0, 0</span></div>
+            <div class="btn-grid">
+              <input type="range" id="printCX" min="-100" max="100" value="0">
+              <input type="range" id="printCY" min="-100" max="100" value="0">
+            </div>
+          </div>
+          <div class="control-row">
+            <div class="control-header"><span>Magenta X / Y</span><span class="control-val" id="printMOffsetVal">0, 0</span></div>
+            <div class="btn-grid">
+              <input type="range" id="printMX" min="-100" max="100" value="0">
+              <input type="range" id="printMY" min="-100" max="100" value="0">
+            </div>
+          </div>
+          <div class="control-row">
+            <div class="control-header"><span>Yellow X / Y</span><span class="control-val" id="printYOffsetVal">0, 0</span></div>
+            <div class="btn-grid">
+              <input type="range" id="printYX" min="-100" max="100" value="0">
+              <input type="range" id="printYY" min="-100" max="100" value="0">
+            </div>
+          </div>
+          <div class="control-row">
+            <div class="control-header"><span>Black Key X / Y</span><span class="control-val" id="printKOffsetVal">0, 0</span></div>
+            <div class="btn-grid">
+              <input type="range" id="printKX" min="-100" max="100" value="0">
+              <input type="range" id="printKY" min="-100" max="100" value="0">
+            </div>
+          </div>
+          <hr style="border:0; border-top:1px solid var(--border);">
+          <div class="control-row">
+            <div class="control-header"><span>Plate Misregistration</span><span class="control-val" id="printMisregVal">6px</span></div>
+            <input type="range" id="printMisreg" min="0" max="40" value="6">
+          </div>
+          <div class="control-row">
+            <div class="control-header"><span>Plate Rotation Error</span><span class="control-val" id="printRotVal">0°</span></div>
+            <input type="range" id="printRot" min="0" max="5" value="0" step="0.1">
+          </div>
+          <div class="control-row">
+            <div class="control-header"><span>Plate Scale Error</span><span class="control-val" id="printScaleVal">0%</span></div>
+            <input type="range" id="printScale" min="0" max="5" value="0" step="0.1">
+          </div>
+          <div class="control-row">
+            <div class="control-header"><span>Dot Gain / Ink Spread</span><span class="control-val" id="printGainVal">0%</span></div>
+            <input type="range" id="printGain" min="0" max="100" value="0">
+          </div>
+          <div class="control-row">
+            <div class="control-header"><span>Ink Starvation Streaks</span><span class="control-val" id="printStreakVal">0%</span></div>
+            <input type="range" id="printStreak" min="0" max="100" value="0">
+          </div>
+          <div class="control-row">
+            <div class="control-header"><span>Halftone Screen</span><span class="control-val" id="printHalftoneVal">0%</span></div>
+            <input type="range" id="printHalftone" min="0" max="100" value="0">
+          </div>
+          <div class="control-row">
+            <div class="control-header"><span>Screen Dot Size</span><span class="control-val" id="printDotSizeVal">5px</span></div>
+            <input type="range" id="printDotSize" min="2" max="16" value="5">
+          </div>
+          <div class="control-row"><div class="control-header"><span>Paper Tone</span></div><input type="color" id="printPaper" value="#ffffff" style="width:100%;height:30px;"></div>
+        </div>
+      </details>
+
+      <details class="effect-group" data-stage="vignette">
+        <summary><span>Vignette FX</span><span class="sw"><input type="checkbox" class="stage-toggle" id="en_vignette"></span></summary>
+        <div class="group-body">
+          <div class="control-row">
+            <div class="control-header"><span>Effect Mix</span><span class="control-val" id="mix_vignetteVal">100%</span></div>
+            <input type="range" id="mix_vignette" min="0" max="100" value="100">
+          </div>
+          <div class="control-row">
+            <div class="control-header"><span>Vignette Amount</span><span class="control-val" id="vigAmountVal">50%</span></div>
+            <input type="range" id="vigAmount" min="0" max="100" value="50">
+          </div>
+          <div class="control-row">
+            <div class="control-header"><span>Size</span><span class="control-val" id="vigSizeVal">70%</span></div>
+            <input type="range" id="vigSize" min="10" max="150" value="70">
+          </div>
+          <div class="control-row">
+            <div class="control-header"><span>Softness</span><span class="control-val" id="vigSoftVal">60%</span></div>
+            <input type="range" id="vigSoft" min="1" max="100" value="60">
+          </div>
+          <div class="control-row">
+            <div class="control-header"><span>Roundness (0 = follows frame)</span><span class="control-val" id="vigRoundVal">50%</span></div>
+            <input type="range" id="vigRound" min="0" max="100" value="50">
+          </div>
+          <div class="control-row">
+            <div class="control-header"><span>Center X</span><span class="control-val" id="vigXVal">50%</span></div>
+            <input type="range" id="vigX" min="0" max="100" value="50">
+          </div>
+          <div class="control-row">
+            <div class="control-header"><span>Center Y</span><span class="control-val" id="vigYVal">50%</span></div>
+            <input type="range" id="vigY" min="0" max="100" value="50">
+          </div>
+          <div class="control-row"><div class="control-header"><span>Vignette Color</span></div><input type="color" id="vigColor" value="#000000" style="width:100%;height:30px;"></div>
+          <hr style="border:0; border-top:1px solid var(--border);">
+          <label class="checkbox-row"><span>Mask Black · top-layer stencil</span><input type="checkbox" id="maskEnabled"></label>
+          <div class="control-row"><div class="control-header"><span>Mask Color (black by default)</span></div><input type="color" id="maskColor" value="#000000" style="width:100%;height:30px;"></div>
+          <div class="control-row">
+            <div class="control-header"><span>Mask Tolerance</span><span class="control-val" id="maskToleranceVal">12%</span></div>
+            <input type="range" id="maskTolerance" min="0" max="100" value="12">
+          </div>
+          <div class="control-row">
+            <div class="control-header"><span>Mask Edge Softness</span><span class="control-val" id="maskSoftnessVal">0%</span></div>
+            <input type="range" id="maskSoftness" min="0" max="40" value="0">
+          </div>
+          <label class="checkbox-row"><span>Keep original pixels instead of flat fill</span><input type="checkbox" id="maskKeep"></label>
+        </div>
+      </details>
+
       <!-- 9. DOUBLE EXPOSURE -->
       <details class="effect-group" data-stage="double">
         <summary><span>Double Exposure</span><span class="sw"><input type="checkbox" class="stage-toggle" id="en_double" checked></span></summary>
@@ -1344,6 +1546,18 @@
   </main>
 
 <script>
+  // ===== Palettizer palette library =====
+  const PALETTES = {"gbpocket":[[196,207,161],[139,149,109],[77,83,60],[31,31,31]],"vboy":[[0,0,0],[85,0,0],[170,0,0],[255,0,0]],"c64":[[0,0,0],[255,255,255],[104,55,43],[112,164,178],[111,61,134],[88,141,67],[53,40,121],[184,199,111],[111,79,37],[67,57,0],[154,103,89],[68,68,68],[108,108,108],[154,210,132],[108,94,181],[149,149,149]],"zx":[[0,0,0],[0,0,215],[215,0,0],[215,0,215],[0,215,0],[0,215,215],[215,215,0],[215,215,215],[0,0,255],[255,0,0],[255,0,255],[0,255,0],[0,255,255],[255,255,0],[255,255,255]],"apple2":[[0,0,0],[108,41,64],[64,53,120],[217,60,240],[19,87,64],[128,128,128],[38,151,240],[191,180,248],[64,75,7],[217,104,15],[236,168,191],[38,195,15],[191,202,135],[147,214,191],[255,255,255]],"msx":[[0,0,0],[62,184,73],[116,208,125],[89,85,224],[128,118,241],[185,94,81],[101,219,239],[219,101,89],[255,137,125],[204,195,94],[222,208,135],[58,162,65],[183,102,181],[204,204,204],[255,255,255]],"win16":[[0,0,0],[128,0,0],[0,128,0],[128,128,0],[0,0,128],[128,0,128],[0,128,128],[192,192,192],[128,128,128],[255,0,0],[0,255,0],[255,255,0],[0,0,255],[255,0,255],[0,255,255],[255,255,255]],"teletext":[[0,0,0],[255,0,0],[0,255,0],[255,255,0],[0,0,255],[255,0,255],[0,255,255],[255,255,255]],"sweetie16":[[26,28,44],[93,39,93],[177,62,83],[239,125,87],[255,205,117],[167,240,112],[56,183,100],[37,113,121],[41,54,111],[59,93,201],[65,166,246],[115,239,247],[244,244,244],[148,176,194],[86,108,134],[51,60,87]],"edg32":[[190,74,47],[215,118,67],[234,212,170],[228,166,114],[184,111,80],[115,62,57],[62,39,49],[162,38,51],[228,59,68],[247,118,34],[254,174,52],[254,231,97],[99,199,77],[62,137,72],[38,92,66],[25,60,62],[18,78,137],[0,153,219],[44,232,245],[255,255,255],[192,203,220],[139,155,180],[90,105,136],[58,68,102],[38,43,68],[24,20,37],[255,0,68],[104,56,108],[181,80,136],[246,117,122],[232,183,150],[194,133,105]],"arne16":[[0,0,0],[73,60,43],[190,38,51],[224,111,139],[157,157,157],[164,100,34],[235,137,49],[247,226,107],[255,255,255],[27,38,50],[47,72,78],[68,137,26],[163,206,39],[0,87,132],[49,162,242],[178,220,239]],"na16":[[140,143,174],[88,69,99],[62,33,55],[154,99,72],[215,155,125],[245,237,186],[192,199,65],[100,125,52],[228,148,58],[157,48,59],[210,100,113],[112,55,127],[126,196,193],[52,133,157],[23,67,75],[31,14,28]],"slso8":[[13,43,69],[32,60,86],[84,78,104],[141,105,122],[208,129,89],[255,170,94],[255,212,163],[255,236,214]],"oil6":[[251,245,239],[242,211,171],[198,159,165],[139,109,156],[73,77,126],[39,39,68]],"icecream":[[124,63,88],[235,107,111],[249,168,117],[255,246,211]],"kirokaze":[[51,44,80],[70,135,143],[148,227,68],[226,243,228]],"mist":[[45,27,0],[30,96,110],[90,185,168],[196,240,194]],"rustic":[[44,33,55],[118,68,98],[237,180,161],[169,104,104]],"spacehaze":[[248,227,196],[204,52,149],[107,31,177],[11,6,48]],"lavagb":[[5,31,57],[74,36,128],[197,58,157],[255,142,128]],"nord":[[46,52,64],[59,66,82],[67,76,94],[76,86,106],[216,222,233],[229,233,240],[236,239,244],[143,188,187],[136,192,208],[129,161,193],[94,129,172],[191,97,106],[208,135,112],[235,203,139],[163,190,140],[180,142,173]],"solarized":[[0,43,54],[7,54,66],[88,110,117],[101,123,131],[131,148,150],[147,161,161],[238,232,213],[253,246,227],[181,137,0],[203,75,22],[220,50,47],[211,54,130],[108,113,196],[38,139,210],[42,161,152],[133,153,0]],"dracula":[[40,42,54],[68,71,90],[248,248,242],[98,114,164],[139,233,253],[80,250,123],[255,184,108],[255,121,198],[189,147,249],[255,85,85],[241,250,140]],"gruvbox":[[40,40,40],[204,36,29],[152,151,26],[215,153,33],[69,133,136],[177,98,134],[104,157,106],[168,153,132],[146,131,116],[251,73,52],[184,187,38],[250,189,47],[131,165,152],[211,134,155],[142,192,124],[235,219,178]],"monokai":[[39,40,34],[249,38,114],[166,226,46],[244,191,117],[102,217,239],[174,129,255],[161,239,228],[248,248,242],[117,113,94]],"cyberpunk":[[13,2,33],[38,20,71],[84,19,136],[241,233,218],[255,42,109],[5,217,232],[209,247,255],[1,1,43],[255,211,25],[255,108,17]],"synthwave":[[43,15,84],[171,31,101],[255,79,105],[255,129,66],[255,218,69],[59,142,234],[10,189,198],[113,28,145],[234,0,217],[19,62,124]],"neonpop":[[0,0,0],[255,255,255],[255,0,170],[255,106,0],[255,238,0],[0,255,102],[0,229,255],[61,0,255],[177,0,255]],"matrix":[[13,2,8],[0,59,0],[0,143,17],[0,255,65]],"amber":[[0,0,0],[51,26,0],[128,63,0],[255,176,0]],"phosphor":[[0,26,0],[0,102,0],[0,204,51],[51,255,102]],"blueprint":[[11,42,91],[28,79,156],[90,143,214],[188,214,247],[255,255,255]],"sunset":[[45,27,105],[91,42,134],[162,62,140],[224,79,107],[245,138,83],[251,198,104],[255,243,176]],"ocean":[[3,4,94],[2,62,138],[0,119,182],[0,150,199],[0,180,216],[72,202,228],[144,224,239],[173,232,244],[202,240,248]],"forest":[[8,28,21],[27,67,50],[45,106,79],[64,145,108],[82,183,136],[116,198,157],[149,213,178],[183,228,199],[216,243,220]],"autumn":[[61,28,2],[111,44,11],[168,66,15],[217,112,26],[242,163,58],[246,211,101],[140,106,63],[90,74,42]],"pastel":[[255,214,224],[255,230,199],[255,245,186],[212,240,192],[199,233,241],[208,200,240],[246,200,240],[232,232,232]],"sepia":[[43,29,14],[92,67,40],[143,107,62],[196,154,98],[240,217,168]],"rainbow":[[255,0,0],[255,127,0],[255,255,0],[0,255,0],[0,0,255],[75,0,130],[148,0,211]],"inferno":[[0,0,4],[27,12,65],[74,12,107],[120,28,109],[165,44,96],[207,68,70],[237,105,37],[251,155,6],[247,209,61],[252,255,164]],"viridis":[[68,1,84],[72,40,120],[62,73,137],[49,104,142],[38,130,142],[31,158,137],[53,183,121],[110,206,88],[181,222,43],[253,231,37]],"duo_pinkblue":[[15,12,41],[63,19,63],[111,26,85],[159,32,107],[207,39,129],[255,46,151]],"duo_toxic":[[0,0,0],[11,51,4],[23,102,8],[34,153,12],[46,204,16],[57,255,20]],"duo_sunset":[[43,16,85],[85,49,82],[128,81,79],[170,114,77],[213,146,74],[255,179,71]],"duo_ice":[[6,20,46],[42,64,88],[77,109,130],[113,153,171],[148,198,213],[184,242,255]],"duo_blood":[[11,0,0],[60,8,8],[109,17,17],[157,25,25],[206,34,34],[255,42,42]],"cmyk8":[[255,255,255],[0,255,255],[255,0,255],[255,255,0],[255,0,0],[0,255,0],[0,0,255],[0,0,0]],"riso":[[248,244,232],[241,80,96],[255,72,176],[255,108,47],[255,232,0],[0,169,92],[0,131,138],[0,120,191],[118,91,167],[0,0,0]],"screenprint":[[244,239,225],[29,29,27],[230,57,70],[241,196,15],[42,157,143]],"newsprint":[[28,28,28],[90,90,90],[154,154,154],[214,210,196],[242,238,227]],"gray4":[[0,0,0],[85,85,85],[170,170,170],[255,255,255]],"gray8":[[0,0,0],[36,36,36],[73,73,73],[109,109,109],[146,146,146],[182,182,182],[219,219,219],[255,255,255]],"gray16":[[0,0,0],[17,17,17],[34,34,34],[51,51,51],[68,68,68],[85,85,85],[102,102,102],[119,119,119],[136,136,136],[153,153,153],[170,170,170],[187,187,187],[204,204,204],[221,221,221],[238,238,238],[255,255,255]]};
+  function updateRetroUI() {
+    const g = id => document.getElementById(id), v = g('retroPalette').value;
+    g('retroSwatchRow').classList.toggle('hidden', v !== 'swatches');
+    g('retroColorCountRow').classList.toggle('hidden', v !== 'custom');
+    let cols = [];
+    if (v === 'swatches') cols = [1, 2, 3, 4, 5, 6].map(n => g('retroSwatch' + n).value);
+    else if (PALETTES[v]) cols = PALETTES[v].map(c => 'rgb(' + c.join(',') + ')');
+    g('retroPreview').innerHTML = cols.map(c => '<span style="flex:1;background:' + c + '"></span>').join('');
+  }
+
   // State Management 
   const state = {
     baseImg: null,
@@ -1663,7 +1877,7 @@
 
   // ===== Source pipeline: orient -> crop -> preview / full =====
   const $ = id => document.getElementById(id);
-  Object.assign(state, { order: ['sort','chroma','random','block','interlace','wave','jpeg','ghost','edge','texture','dream','retro','dither','scan','vhs'],
+  Object.assign(state, { order: ['sort','chroma','random','block','interlace','wave','jpeg','ghost','edge','texture','dream','retro','dither','print','scan','vhs','vignette'],
     transform: { rot: 0, fx: false, fy: false }, srcVer: 0, previewQ: 'balanced', cropEditing: false, showOrig: false, suspend: false, justPanned: false });
   const PREVIEW = { fast: 900, balanced: 1400, full: 99999 };
   const orientCanvas = document.createElement('canvas');
@@ -1985,6 +2199,12 @@
     document.getElementById('textSizeVal').textContent = document.getElementById('textSize').value + 'px';
     document.getElementById('textXVal').textContent = document.getElementById('textX').value + '%';
     document.getElementById('textYVal').textContent = document.getElementById('textY').value + '%';
+    [['vhsWarp','%'],['vigAmount','%'],['vigSize','%'],['vigSoft','%'],['vigRound','%'],['vigX','%'],['vigY','%'],['maskTolerance','%'],['maskSoftness','%'],
+     ['printAberr','px'],['printAberrAngle','°'],['printMisreg','px'],['printRot','°'],['printScale','%'],['printGain','%'],['printStreak','%'],['printHalftone','%'],['printDotSize','px']].forEach(([id, s]) => {
+      const v = document.getElementById(id + 'Val'); if (v) v.textContent = document.getElementById(id).value + s; });
+    [['printC','printCX','printCY'],['printM','printMX','printMY'],['printY','printYX','printYY'],['printK','printKX','printKY']].forEach(([n, a, b]) => {
+      const v = document.getElementById(n + 'OffsetVal'); if (v) v.textContent = document.getElementById(a).value + ', ' + document.getElementById(b).value; });
+    updateRetroUI();
     document.querySelectorAll('input[id^="mix_"]').forEach(el => { const v = document.getElementById(el.id + 'Val'); if (v) v.textContent = el.value + '%'; });
     [['sortAngle','°'],['sortMax',''],['interOffset','px'],['interJitter','%'],['interDim','%'],['jpegQuality',''],['jpegCorrupt','%'],['ditherLevels',''],['ditherSize','px'],
      ['edgeStrength','%'],['edgeThreshold','%'],['edgeGlow','px'],['ghostCount',''],['ghostSpacing','px'],['ghostAngle','°'],['ghostFade','%'],
@@ -2500,7 +2720,7 @@
       const colorCount = parseInt(document.getElementById('retroColorCount').value, 10);
       const strength = parseInt(document.getElementById('retroStrength').value, 10) / 100;
       const paletteName = document.getElementById('retroPalette').value;
-      const palettes = {
+      const LEGACY = {
         gameboy: [[15,56,15],[48,98,48],[139,172,15],[155,188,15]],
         pico8: [[0,0,0],[29,43,83],[126,37,83],[0,135,81],[171,82,54],[95,87,79],[194,195,199],[255,241,232],[255,0,77],[255,163,0],[255,236,39],[0,228,54],[41,173,255],[131,118,156],[255,119,168],[255,204,170]],
         dawnbringer: [[20,12,28],[68,36,52],[48,52,109],[78,74,78],[133,76,48],[52,101,36],[208,70,72],[117,113,97],[89,125,206],[210,125,44],[133,149,161],[109,170,44],[210,170,153],[109,194,202],[218,212,94],[222,238,214]],
@@ -2509,9 +2729,8 @@
         amiga: [[0,0,0],[34,32,52],[69,40,60],[102,57,49],[143,86,59],[223,113,38],[217,160,102],[238,195,154],[50,60,57],[63,104,71],[104,138,129],[181,189,104],[148,176,194],[117,129,168],[86,108,134],[255,255,255]],
         mono: [[0,0,0],[255,255,255]]
       };
-      // Correct a palette entry kept as a named RGB triplet.
-      palettes.amiga[10] = [104,138,129];
-      let palette = palettes[paletteName] || palettes.pico8;
+      const fromSwatches = () => [1, 2, 3, 4, 5, 6].map(n => { const c = hexToRgb(document.getElementById('retroSwatch' + n).value); return [c.r, c.g, c.b]; });
+      let palette = paletteName === 'swatches' ? fromSwatches() : (LEGACY[paletteName] || PALETTES[paletteName] || LEGACY.pico8);
       if (paletteName === 'custom') {
         // Build a compact image-derived palette using deterministic k-means.
         const samples = [];
@@ -2541,11 +2760,13 @@
           }
         }
       }
-      const reduced = [];
-      for (let i = 0; i < colorCount; i++) {
-        const pick = Math.round(i * (palette.length - 1) / Math.max(1, colorCount - 1));
-        if (!reduced.some(c => c === palette[pick])) reduced.push(palette[pick]);
-      }
+      let reduced = [];
+      if (paletteName === 'custom') {
+        for (let i = 0; i < colorCount; i++) {
+          const pick = Math.round(i * (palette.length - 1) / Math.max(1, colorCount - 1));
+          if (!reduced.some(c => c === palette[pick])) reduced.push(palette[pick]);
+        }
+      } else reduced = palette;   // fixed / swatch palettes always use every color
       const snap = new Uint8ClampedArray(dst);
       for (let by = 0; by < h; by += pixelSize) {
         for (let bx = 0; bx < w; bx += pixelSize) {
@@ -2582,6 +2803,7 @@
     // 9. VHS ROT — waveform tracking damage, chroma loss, and signal dropouts.
     if (document.getElementById('vhsEnabled').checked) {
       const rot = parseInt(document.getElementById('vhsStrength').value, 10) / 100;
+      const warp = parseInt(document.getElementById('vhsWarp').value, 10) / 100;   // independent waveform-warp amount
       const dropout = parseInt(document.getElementById('vhsDropout').value, 10) / 100;
       const colorLoss = parseInt(document.getElementById('vhsColorLoss').value, 10) / 100;
       const bandCount = parseInt(document.getElementById('vhsBands').value, 10);
@@ -2608,7 +2830,7 @@
         waveform[y] = Math.max(-1, Math.min(1, wave));
       }
 
-      const maxShift = Math.max(1, Math.round(w * 0.045 * rot));
+      const maxShift = Math.round(w * 0.045 * warp);
       for (let y = 0; y < h; y++) {
         const bandWave = waveform[y];
         const shift = Math.round(bandWave * maxShift);
@@ -2772,6 +2994,73 @@
       }
     };
 
+    stages.vignette = () => {
+      const amt = $v('vigAmount') / 100; if (amt <= 0) return;
+      const size = $v('vigSize') / 100, soft = Math.max(0.02, $v('vigSoft') / 100), round = $v('vigRound') / 100;
+      const cx = $v('vigX') / 100 * w, cy = $v('vigY') / 100 * h, col = hexToRgb($('vigColor').value);
+      const R = Math.hypot(w, h) / 2, ex = w / 2 * Math.SQRT2, ey = h / 2 * Math.SQRT2;
+      const ax = (ex + (R - ex) * round) * size, ay = (ey + (R - ey) * round) * size;
+      for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+        let t = (Math.hypot((x - cx) / ax, (y - cy) / ay) - (1 - soft)) / soft;
+        if (t <= 0) continue;
+        t = Math.min(1, t); t = t * t * (3 - 2 * t);
+        const p = (y * w + x) * 4, a = amt * t;
+        if (!evaluatePixelSelection('vignette', dst[p], dst[p + 1], dst[p + 2])) continue;
+        dst[p] = dst[p] * (1 - a) + col.r * a; dst[p + 1] = dst[p + 1] * (1 - a) + col.g * a; dst[p + 2] = dst[p + 2] * (1 - a) + col.b * a;
+      }
+    };
+
+    stages.print = (rand) => {
+      const aberr = pxv('printAberr'), aAng = $v('printAberrAngle') * Math.PI / 180;
+      const man = [['printCX', 'printCY'], ['printMX', 'printMY'], ['printYX', 'printYY'], ['printKX', 'printKY']].map(([a, b]) => [pxv(a), pxv(b)]);
+      const misreg = pxv('printMisreg'), rotMax = parseFloat($('printRot').value) * Math.PI / 180, scMax = parseFloat($('printScale').value) / 100;
+      const gain = $v('printGain') / 100, streak = $v('printStreak') / 100, ht = $v('printHalftone') / 100, dot = Math.max(2, pxv('printDotSize'));
+      const paper = hexToRgb($('printPaper').value);
+      if (!aberr && !misreg && !rotMax && !scMax && !gain && !streak && !ht && man.every(m => !m[0] && !m[1]) && $('printPaper').value.toLowerCase() === '#ffffff') return;
+      const N = w * h, orig = new Uint8ClampedArray(dst), P = [0, 1, 2, 3].map(() => new Float32Array(N));
+      for (let i = 0, p = 0; i < N; i++, p += 4) {                         // RGB -> CMYK plates (0..1 ink coverage)
+        const r = dst[p] / 255, g = dst[p + 1] / 255, b = dst[p + 2] / 255, k = 1 - Math.max(r, g, b), inv = k < 1 ? 1 / (1 - k) : 0;
+        P[0][i] = (1 - r - k) * inv; P[1][i] = (1 - g - k) * inv; P[2][i] = (1 - b - k) * inv; P[3][i] = k;
+      }
+      if (gain > 0) { const e = 1 - 0.55 * gain; for (let k = 0; k < 4; k++) for (let i = 0; i < N; i++) P[k][i] = Math.pow(P[k][i], e); }
+      const screenAng = [15, 75, 0, 45].map(d => d * Math.PI / 180);       // classic halftone screen angles C M Y K
+      const plates = [0, 1, 2, 3].map(k => {
+        const a = aAng + k * Math.PI / 2, reg = k < 3;                      // K is the reference plate for random errors
+        return { ox: Math.cos(a) * aberr + man[k][0] + (reg ? (rand() * 2 - 1) * misreg : 0), oy: Math.sin(a) * aberr + man[k][1] + (reg ? (rand() * 2 - 1) * misreg : 0),
+                 rot: reg ? (rand() * 2 - 1) * rotMax : 0, sc: 1 + (reg ? (rand() * 2 - 1) * scMax : 0) };
+      });
+      const colMul = P.map(() => { const m = new Float32Array(w).fill(1); if (streak > 0) { let v = 0;
+        for (let x = 0; x < w; x++) { v = v * 0.9 + (rand() * 2 - 1) * 0.35; const drop = rand() < 0.012 * streak ? 1 : 0; m[x] = Math.max(0, 1 - streak * (Math.max(0, -v) * 1.4 + drop * 0.8)); } } return m; });
+      const cx = w / 2, cy = h / 2, W1 = w - 1, H1 = h - 1, cl = (v, m) => v < 0 ? 0 : v > m ? m : v;
+      const bil = (pl, sx, sy) => {
+        sx = cl(sx, W1); sy = cl(sy, H1);
+        const x0 = Math.floor(sx), y0 = Math.floor(sy), x1 = Math.min(W1, x0 + 1), y1 = Math.min(H1, y0 + 1), fx = sx - x0, fy = sy - y0;
+        return (pl[y0 * w + x0] * (1 - fx) + pl[y0 * w + x1] * fx) * (1 - fy) + (pl[y1 * w + x0] * (1 - fx) + pl[y1 * w + x1] * fx) * fy;
+      };
+      const out = [0, 1, 2, 3].map(() => new Float32Array(N));
+      for (let k = 0; k < 4; k++) {
+        const pl = plates[k], cr = Math.cos(pl.rot), sr = Math.sin(pl.rot), cs = Math.cos(screenAng[k]), ss = Math.sin(screenAng[k]), plane = P[k], o = out[k], cm = colMul[k];
+        for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+          const rx = x - cx - pl.ox, ry = y - cy - pl.oy;
+          const sx = (rx * cr + ry * sr) / pl.sc + cx, sy = (-rx * sr + ry * cr) / pl.sc + cy;   // inverse plate transform
+          let v = bil(plane, sx, sy);
+          if (ht > 0) {
+            const u = sx * cs + sy * ss, vv = -sx * ss + sy * cs, cu = (Math.floor(u / dot) + 0.5) * dot, cv = (Math.floor(vv / dot) + 0.5) * dot;
+            const x0 = cu * cs - cv * ss, y0 = cu * ss + cv * cs;
+            const s = plane[Math.round(cl(y0, H1)) * w + Math.round(cl(x0, W1))];
+            const rad = Math.min(dot * 0.7071, dot * Math.sqrt(s / Math.PI)), a = cl(rad - Math.hypot(u - cu, vv - cv) + 0.5, 1);
+            v = v * (1 - ht) + a * ht;
+          }
+          o[y * w + x] = v * cm[x];
+        }
+      }
+      for (let i = 0, p = 0; i < N; i++, p += 4) {                         // recombine, respecting the master color-target mask
+        if (!evaluatePixelSelection('print', orig[p], orig[p + 1], orig[p + 2])) continue;
+        const c = out[0][i], m = out[1][i], yy = out[2][i], k = 1 - out[3][i];
+        dst[p] = paper.r * (1 - c) * k; dst[p + 1] = paper.g * (1 - m) * k; dst[p + 2] = paper.b * (1 - yy) * k;
+      }
+    };
+
     const gkey = [state.srcVer, w, h, state.seed, $('masterOverrideSelect').value, $('masterColor').value, $('masterTolerance').value, JSON.stringify(state.tools)].join('|');
     let prev = hs(gkey), have = null, valid = true;
     const ensure = () => { if (!valid) { dst.set(have || src); valid = true; } };
@@ -2833,6 +3122,21 @@
       octx.fillStyle = color;
       octx.fillText(text, tx, ty);
       octx.restore();
+    }
+
+    // 10. MASK BLACK — top-most stencil layer built from the untouched source, so no FX (or text) can cover it
+    if ($('en_vignette').checked && $('maskEnabled').checked) {
+      const col = hexToRgb($('maskColor').value), thr = $v('maskTolerance') / 100, soft = $v('maskSoftness') / 100, keep = $('maskKeep').checked;
+      const ov = octx.createImageData(w, h), od = ov.data;
+      for (let i = 0; i < src.length; i += 4) {
+        const d = Math.hypot(src[i] - col.r, src[i + 1] - col.g, src[i + 2] - col.b) / 441.673;
+        const a = d <= thr ? 1 : (soft > 0 ? Math.max(0, 1 - (d - thr) / soft) : 0);
+        if (a <= 0) continue;
+        od[i] = keep ? src[i] : col.r; od[i + 1] = keep ? src[i + 1] : col.g; od[i + 2] = keep ? src[i + 2] : col.b; od[i + 3] = a * 255;
+      }
+      const tmp = document.createElement('canvas'); tmp.width = w; tmp.height = h;
+      tmp.getContext('2d').putImageData(ov, 0, 0);
+      octx.drawImage(tmp, 0, 0);
     }
   }
 
@@ -2996,9 +3300,11 @@
   // ----- presets -----
   const DEFAULTS = getSettings(true);
   const BUILTIN = {
-    'VHS Meltdown': { vhsEnabled: true, vhsStrength: 70, vhsDropout: 45, vhsColorLoss: 60, vhsBands: 24, aberrationAmount: 6, pixelNoise: 28, scanlineIntensity: 35, scanSpacing: 3 },
+    'VHS Meltdown': { vhsEnabled: true, vhsStrength: 70, vhsWarp: 60, vhsDropout: 45, vhsColorLoss: 60, vhsBands: 24, aberrationAmount: 6, pixelNoise: 28, scanlineIntensity: 35, scanSpacing: 3 },
     'Datamosh': { blockEnabled: true, blockMode: 'mixed', blockSize: 24, blockDensity: 28, blockShift: 8, sliceAmount: 14, sliceHeight: 5, sliceChroma: 40, aberrationAmount: 8 },
     'Neon Edge': { en_edge: true, edgeStrength: 90, edgeThreshold: 12, edgeGlow: 6, en_ghost: true, ghostCount: 4, ghostSpacing: 18, ghostMode: 'screen', ghostFade: 55 },
+    'Misprint': { en_print: true, printMisreg: 10, printAberr: 3, printGain: 40, printStreak: 30, printHalftone: 70, printDotSize: 5, printRot: 1.2 },
+    'Noir Vignette': { en_vignette: true, vigAmount: 85, vigSize: 60, vigSoft: 70, maskEnabled: true, maskTolerance: 10, en_edge: true, edgeStrength: 45 },
     'Dead Fax': { en_dither: true, ditherMode: 'bayer8', ditherLevels: 2, ditherSize: 2, ditherMono: true, ditherInk: '#e8ebe9', en_jpeg: true, jpegQuality: 6, jpegCorrupt: 14 },
     'Broken Signal': { waveEnabled: true, waveShape: 'stepped', waveAmp: 40, waveLen: 220, en_interlace: true, interOffset: 14, interJitter: 40, en_scan: true, scanlineIntensity: 40, scanAngle: 12, sortEnabled: true, sortAngle: 20, sortThreshold: 140 }
   };
@@ -3085,6 +3391,8 @@
 
   // ----- initial sync -----
   syncPanels(); syncDomOrder(); renderStack(); refreshPresetList(); updateLabels(); $('seedInput').value = state.seed;
+
+  //spm2026
 </script>
 </body>
 </html>
